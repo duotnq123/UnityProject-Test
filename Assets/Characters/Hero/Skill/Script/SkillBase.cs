@@ -21,7 +21,7 @@ public abstract class SkillBase : MonoBehaviour
 
     public void TryUseSkill()
     {
-        if (isOnCooldown || isSkillPlaying || movement == null || !movement.IsGrounded)
+        if (isOnCooldown || isSkillPlaying || movement == null || !movement.IsGrounded || !movement.IsCombat)
             return;
 
         isSkillPlaying = true;

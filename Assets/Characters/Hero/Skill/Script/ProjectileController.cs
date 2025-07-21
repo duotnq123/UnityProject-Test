@@ -71,4 +71,8 @@ public class ProjectileController : MonoBehaviour
         else
             Debug.LogWarning($"Cannot return {gameObject.name}: projectilePool is null!");
     }
+    public void SetPool(ObjectPool pool)
+    {
+        projectilePool = pool;
+    }
 }

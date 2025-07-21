@@ -47,6 +47,7 @@ public class Skill2 : SkillBase
             if (pc != null)
             {
                 pc.SetDirection(dir);
+                pc.SetPool(projectilePool); 
             }
         }
     }

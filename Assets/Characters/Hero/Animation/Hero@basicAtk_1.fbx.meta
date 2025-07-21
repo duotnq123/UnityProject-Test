@@ -55,7 +55,7 @@ ModelImporter:
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
       events:
-      - time: 0.24807692
+      - time: 0.31576252
         functionName: CastProjectile
         data: 
         objectReferenceParameter: {instanceID: 0}

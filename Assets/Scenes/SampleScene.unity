@@ -180,7 +180,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 7626139322179216226, guid: dc33e45a4bb28854c941caca0629dcce, type: 3}
-  initialSize: 10
+  initialSize: 20
   autoExpand: 1
 --- !u!4 &237226321
 Transform:
@@ -538,7 +538,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 7626139322179216226, guid: dc33e45a4bb28854c941caca0629dcce, type: 3}
-  initialSize: 10
+  initialSize: 20
   autoExpand: 1
 --- !u!4 &376110134
 Transform:
@@ -2103,7 +2103,7 @@ Transform:
   m_GameObject: {fileID: 1638594950}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.06, y: 1.254, z: 0.815}
+  m_LocalPosition: {x: 0.34, y: 1.254, z: 0.815}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2233,7 +2233,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   prefab: {fileID: 7626139322179216226, guid: dc33e45a4bb28854c941caca0629dcce, type: 3}
-  initialSize: 10
+  initialSize: 20
   autoExpand: 1
 --- !u!4 &1770415527
 Transform:
@@ -2286,12 +2286,12 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 0.89742976, y: 1.1446505, z: 0.9027416}
-  m_Center: {x: 0, y: 0.5723252, z: -0.2}
+  m_Center: {x: 0, y: 0.5723252, z: 0}
 --- !u!1 &1925905513
 GameObject:
   m_ObjectHideFlags: 0
@@ -2729,6 +2729,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 2699112503377014776, guid: 0805a2615c2d55b489b777b9d421d130, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: b569a95a5a4fc7a489ecf156b071a734, type: 2}
     - target: {fileID: 2714334297167736418, guid: 0805a2615c2d55b489b777b9d421d130, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -2749,6 +2753,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 7
       objectReference: {fileID: 0}
+    - target: {fileID: 4568313025700287890, guid: 0805a2615c2d55b489b777b9d421d130, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: a314b2ee4ecda274e882b2ba4d755bd4, type: 2}
     - target: {fileID: 4772958462311653867, guid: 0805a2615c2d55b489b777b9d421d130, type: 3}
       propertyPath: m_Layer
       value: 7
@@ -3075,7 +3083,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6938721239162126118, guid: 5b2c1fe44eec58d4e96871ed6257ad21, type: 3}
       propertyPath: m_IsTrigger
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8981271081181457611, guid: 5b2c1fe44eec58d4e96871ed6257ad21, type: 3}
       propertyPath: m_Enabled

@@ -41,16 +41,15 @@ public class Skill1 : SkillBase
                 dir = transform.forward;
 
             projectile.transform.rotation = Quaternion.LookRotation(dir);
-
             // Gán hướng di chuyển cho ProjectileController
             ProjectileController pc = projectile.GetComponent<ProjectileController>();
             if (pc != null)
             {
                 pc.SetDirection(dir);
+                pc.SetPool(projectilePool); 
             }
         }
     }
-
     public void OnSkillEnd()
     {
         if (activeAura != null && auraPool != null)

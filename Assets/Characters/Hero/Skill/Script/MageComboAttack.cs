@@ -12,17 +12,19 @@ public class MageComboAttack : MonoBehaviour
     public Transform spellSpawnPoint;
 
     [Header("Auto Aim")]
-    public PlayerAutoAim autoAim; // Gán trực tiếp component này trong Inspector
+    public PlayerAutoAim autoAim;
 
     private Animator animator;
     private PlayerMovement movement;
 
     private int comboStep = 0;
-    private bool isAttacking = false;
+    public bool isAttacking = false;
     private bool canCombo = false;
     private bool queuedNextAttack = false;
-
+    private bool isCombat = false;
     private float lastClickTime = 0f;
+
+    [Header("Combo Timing")]
     public float comboResetTime = 2f;
 
     void Start()
@@ -33,13 +35,15 @@ public class MageComboAttack : MonoBehaviour
 
     void Update()
     {
-        // Reset combo nếu quá thời gian
+        if (SkillBase.isSkillPlaying) return;
+
+        isCombat = animator.GetBool("IsCombat");
+
         if (Time.time - lastClickTime > comboResetTime && comboStep > 0)
         {
             ResetCombo();
         }
 
-        // Tấn công bằng chuột trái
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             HandleAttackInput();
@@ -48,6 +52,9 @@ public class MageComboAttack : MonoBehaviour
 
     void HandleAttackInput()
     {
+        // Nếu chưa bật IsCombat → bỏ qua
+        if (!isCombat) return;
+
         lastClickTime = Time.time;
 
         if (isAttacking)
@@ -62,15 +69,12 @@ public class MageComboAttack : MonoBehaviour
             StartNextComboStep();
         }
     }
-
     void StartNextComboStep()
     {
-        // Không cho combo đầu tiên khi đang trên không
         if (comboStep == 0 && movement != null && !movement.IsGrounded)
             return;
 
-        comboStep++;
-        if (comboStep > 3) comboStep = 1;
+        comboStep = (comboStep % 3) + 1;
 
         animator.SetInteger("comboStep", comboStep);
         animator.SetTrigger("attackTrigger");
@@ -94,49 +98,42 @@ public class MageComboAttack : MonoBehaviour
             StartNextComboStep();
     }
 
-    public void DisableComboWindow()
-    {
-        canCombo = false;
-    }
+    public void DisableComboWindow() => canCombo = false;
 
     public void CastProjectile()
     {
-        Transform target = autoAim.GetTarget();
         Vector3 spawnPos = spellSpawnPoint.position;
-        Quaternion spawnRot = spellSpawnPoint.rotation;
         Vector3 direction = spellSpawnPoint.forward;
+        Quaternion rotation = spellSpawnPoint.rotation;
 
+        Transform target = autoAim?.GetTarget();
         if (target != null)
         {
             direction = (target.position - spawnPos).normalized;
-            spawnRot = Quaternion.LookRotation(direction);
+            rotation = Quaternion.LookRotation(direction);
         }
 
-        GameObject projectile = null;
-
-        switch (comboStep)
+        ObjectPool selectedPool = comboStep switch
         {
-            case 1:
-                projectile = spell1Pool?.GetObject(spawnPos, spawnRot);
-                break;
-            case 2:
-                projectile = spell2Pool?.GetObject(spawnPos, spawnRot);
-                break;
-            case 3:
-                projectile = spell3Pool?.GetObject(spawnPos, spawnRot);
-                break;
-        }
+            1 => spell1Pool,
+            2 => spell2Pool,
+            3 => spell3Pool,
+            _ => null
+        };
 
+        if (selectedPool == null) return;
+
+        GameObject projectile = selectedPool.GetObject(spawnPos, rotation);
         if (projectile != null)
         {
-            ProjectileController controller = projectile.GetComponent<ProjectileController>();
+            var controller = projectile.GetComponent<ProjectileController>();
             if (controller != null)
             {
                 controller.SetDirection(direction);
+                controller.SetPool(selectedPool); // Gắn lại pool cho return
             }
         }
     }
-
 
     public void EndAttack()
     {
