@@ -490,7 +490,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dc28d4d62df3a8409138c148e1eb23b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefab: {fileID: 8378648546881499446, guid: 867c572a5be680d42a042d2349f10143, type: 3}
+  prefab: {fileID: 7957833072274404953, guid: 3355f6bfa6db8b24281b827de929694c, type: 3}
   initialSize: 20
   autoExpand: 1
 --- !u!4 &338902042
@@ -1186,6 +1186,14 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 523051254253787131, guid: 87123ac33e4f0f04bacc28c3d2dcb0f6, type: 3}
+      propertyPath: m_RayTraceProcedural
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 523051254253787131, guid: 87123ac33e4f0f04bacc28c3d2dcb0f6, type: 3}
+      propertyPath: m_StaticShadowCaster
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 2022053647068728890, guid: 87123ac33e4f0f04bacc28c3d2dcb0f6, type: 3}
       propertyPath: m_LocalScale.x
       value: 6
@@ -1707,7 +1715,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5ef9ee28a8cedf2438f9ac0f808e25d7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cooldown: 10
+  cooldown: 1
   projectileSpawnPoint: {fileID: 455316807}
   auraSpawnPoint: {fileID: 1287933920}
   projectilePool: {fileID: 338902041}
@@ -1824,6 +1832,7 @@ MonoBehaviour:
   spell3Pool: {fileID: 376110133}
   spellSpawnPoint: {fileID: 1638594951}
   autoAim: {fileID: 1287933933}
+  isAttacking: 0
   comboResetTime: 2
 --- !u!114 &1287933933
 MonoBehaviour:
@@ -1843,6 +1852,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   aimPivot: {fileID: 89911557}
+  targetYOffset: 10
 --- !u!1 &1451362219
 GameObject:
   m_ObjectHideFlags: 0
@@ -2396,8 +2406,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1, y: 1, z: 1}
-  m_LocalScale: {x: 31.126244, y: 0.86727, z: 26.176174}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 50, y: 1.3931491, z: 42.048397}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
