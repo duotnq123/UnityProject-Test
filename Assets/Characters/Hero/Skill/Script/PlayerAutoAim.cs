@@ -8,6 +8,7 @@ public class PlayerAutoAim : MonoBehaviour
     public float maxLockAngle = 60f;
     public LayerMask enemyLayer;
     public Transform aimPivot;
+    public float targetYOffset = 1.0f;
 
     private Transform currentTarget;
     private InputAction lockOnAction;
@@ -47,8 +48,9 @@ public class PlayerAutoAim : MonoBehaviour
                 UnlockTarget();
                 return;
             }
+            Vector3 targetPosition = currentTarget.position + Vector3.up * targetYOffset;
+            Vector3 direction = targetPosition - aimPivot.position;
 
-            Vector3 direction = currentTarget.position - aimPivot.position;
             direction.y = 0;
             aimPivot.forward = Vector3.Lerp(aimPivot.forward, direction.normalized, Time.deltaTime * 10f);
         }

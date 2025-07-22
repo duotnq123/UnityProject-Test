@@ -9,6 +9,13 @@ public class ProjectileController : MonoBehaviour
     private Vector3 startPos;
     private ObjectPool projectilePool; 
     private Vector3 direction = Vector3.forward;
+    private bool isReturning = false;
+
+    private System.Collections.IEnumerator DelayedReturnToPool(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        ReturnToPool();
+    }
 
     public void SetDirection(Vector3 dir)
     {
@@ -25,11 +32,14 @@ public class ProjectileController : MonoBehaviour
 
     void OnEnable()
     {
-        startPos = transform.position; // Cập nhật vị trí bắt đầu khi tái sử dụng
+        startPos = transform.position; 
+        isReturning = false;
     }
 
     void Update()
     {
+        if (isReturning) return;
+
         transform.Translate(direction * speed * Time.deltaTime, Space.World);
 
         float distanceTraveled = Vector3.Distance(startPos, transform.position);
@@ -41,15 +51,13 @@ public class ProjectileController : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
+        if (isReturning) return;
+
         Debug.Log("Projectile hit: " + other.name);
 
         if (other.CompareTag("Enemy"))
         {
-            // TODO: Gây sát thương ở đây nếu cần
-            if (projectilePool != null)
-                projectilePool.ReturnObject(gameObject);
-            else
-                Debug.LogWarning($"Cannot return {gameObject.name} on Enemy hit: projectilePool is null!");
+            StartCoroutine(DelayedReturnToPool(5f));  // Delay trả đạn
             return;
         }
 
@@ -58,19 +66,21 @@ public class ProjectileController : MonoBehaviour
         {
             Debug.Log("Breakable hit! Breaking...");
             breakable.Break();
-            if (projectilePool != null)
-                projectilePool.ReturnObject(gameObject);
-            else
-                Debug.LogWarning($"Cannot return {gameObject.name} on Breakable hit: projectilePool is null!");
+            ReturnToPool();
         }
     }
+
     void ReturnToPool()
     {
+        if (isReturning) return;
+        isReturning = true;
+
         if (projectilePool != null)
             projectilePool.ReturnObject(gameObject);
         else
             Debug.LogWarning($"Cannot return {gameObject.name}: projectilePool is null!");
     }
+
     public void SetPool(ObjectPool pool)
     {
         projectilePool = pool;

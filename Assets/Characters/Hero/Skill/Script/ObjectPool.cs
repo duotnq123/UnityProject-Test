@@ -3,74 +3,75 @@ using System.Collections.Generic;
 
 public class ObjectPool : MonoBehaviour
 {
-    private Queue<GameObject> pool = new Queue<GameObject>();
-    public GameObject prefab; // Prefab để tạo đối tượng
-    public int initialSize = 10; // Kích thước ban đầu của pool
-    public bool autoExpand = true; // Tự động mở rộng pool nếu cần
+    [Header("Pooling Settings")]
+    public GameObject prefab;
+    public int initialSize = 10;
+    public bool autoExpand = true;
 
-    void Start()
+    private Queue<GameObject> pool = new Queue<GameObject>();
+
+    private void Awake()
     {
-        // Kiểm tra và khởi tạo pool với số lượng đối tượng ban đầu
         if (prefab == null)
         {
-            Debug.LogError($"No prefab assigned to {gameObject.name}!");
+            Debug.LogError($"[{gameObject.name}] Missing prefab reference!");
             return;
         }
+
         for (int i = 0; i < initialSize; i++)
         {
-            GameObject obj = Instantiate(prefab);
+            GameObject obj = Instantiate(prefab, transform);
             obj.SetActive(false);
             pool.Enqueue(obj);
         }
     }
 
+    /// <summary>
+    /// Lấy object từ pool và kích hoạt nó
+    /// </summary>
     public GameObject GetObject(Vector3 position, Quaternion rotation)
     {
-        GameObject obj;
+        GameObject obj = null;
+
         if (pool.Count > 0)
         {
             obj = pool.Dequeue();
-            obj.SetActive(true);
-            obj.transform.position = position;
-            obj.transform.rotation = rotation;
-            obj.transform.SetParent(null);
-            Debug.Log($"Retrieved {obj.name} from {gameObject.name} at {position}");
         }
         else if (autoExpand)
         {
-            obj = Instantiate(prefab, position, rotation);
-            Debug.Log($"Created new {obj.name} for {gameObject.name} at {position}");
+            obj = Instantiate(prefab, transform);
         }
         else
         {
-            Debug.LogWarning($"Pool {gameObject.name} is empty and autoExpand is disabled!");
+            Debug.LogWarning($"[{gameObject.name}] Pool exhausted and autoExpand is off!");
             return null;
         }
 
-        // Xử lý ParticleSystem và các hệ thống con
-        ParticleSystem[] particleSystems = obj.GetComponentsInChildren<ParticleSystem>();
-        if (particleSystems.Length > 0)
+        obj.transform.SetParent(null); // đảm bảo nó không bị parent làm lệch scale/position
+        obj.transform.position = position;
+        obj.transform.rotation = rotation;
+        obj.SetActive(true);
+
+        // Reset particle system nếu có
+        var psArray = obj.GetComponentsInChildren<ParticleSystem>(true);
+        foreach (var ps in psArray)
         {
-            foreach (var ps in particleSystems)
-            {
-                ps.Clear();
-                ps.Play();
-                Debug.Log($"Playing ParticleSystem on {obj.name}");
-            }
+            ps.Clear(true);
+            ps.Play(true);
         }
 
         return obj;
     }
 
+    /// <summary>
+    /// Trả object về pool và ẩn nó đi
+    /// </summary>
     public void ReturnObject(GameObject obj)
     {
-        if (obj == null)
-        {
-            Debug.LogWarning($"Attempted to return null object to {gameObject.name}!");
-            return;
-        }
+        if (obj == null) return;
+
         obj.SetActive(false);
+        obj.transform.SetParent(transform); // để gọn trong hierarchy
         pool.Enqueue(obj);
-        Debug.Log($"Returned {obj.name} to {gameObject.name}");
     }
 }

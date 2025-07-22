@@ -109,7 +109,8 @@ public class MageComboAttack : MonoBehaviour
         Transform target = autoAim?.GetTarget();
         if (target != null)
         {
-            direction = (target.position - spawnPos).normalized;
+            Vector3 targetPosition = target.GetComponent<Collider>()?.bounds.center ?? target.position;
+            direction = (targetPosition - spawnPos).normalized;
             rotation = Quaternion.LookRotation(direction);
         }
 
@@ -134,6 +135,7 @@ public class MageComboAttack : MonoBehaviour
             }
         }
     }
+
 
     public void EndAttack()
     {
