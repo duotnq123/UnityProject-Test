@@ -7,6 +7,7 @@ TagManager:
   - FxTemporaire
   - Breakable
   - Enemy
+  - Pet
   layers:
   - Default
   - TransparentFX
@@ -16,8 +17,8 @@ TagManager:
   - UI
   - Player
   - Enemy
-  - 
-  - 
+  - Pet
+  - Ground
   - 
   - 
   - 

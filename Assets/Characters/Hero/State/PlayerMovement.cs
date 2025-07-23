@@ -26,9 +26,12 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 moveInput;
     private Vector3 velocity;
     private bool isRunning;
+    public static bool IsPlayerRunning = false;
     private bool isGrounded;
+    private bool previousIsCombat = false;
+    public PetFollow petFollow;
 
-    // Public properties for external access
+    // Public properties
     public bool IsMovementLocked
     {
         get => isMovementLocked;
@@ -66,16 +69,17 @@ public class PlayerMovement : MonoBehaviour
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
 
-        // Kiểm tra các thành phần cần thiết
         if (controller == null) Debug.LogError("CharacterController is missing!");
         if (animator == null) Debug.LogError("Animator is missing!");
         if (cameraTransform == null) Debug.LogError("cameraTransform is not assigned!");
 
-        // Đảm bảo trạng thái ban đầu
         isMovementLocked = false;
         allowMove = true;
         allowRotation = true;
-    }
+
+        Debug.Log("Animator IsCombat on Start = " + animator.GetBool("IsCombat"));
+        animator.SetBool("IsCombat", false);
+        previousIsCombat = false;    }
 
     void Update()
     {
@@ -85,6 +89,8 @@ public class PlayerMovement : MonoBehaviour
             controller.Move(Vector3.zero);
             UpdateAnimator(0f);
             Debug.Log("Movement locked: stopping all movement");
+
+            Debug.Log("Update IsCombat: " + animator.GetBool("IsCombat"));
             return;
         }
 
@@ -139,8 +145,7 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 forward = Vector3.ProjectOnPlane(cameraTransform.forward, Vector3.up).normalized;
         Vector3 right = Vector3.ProjectOnPlane(cameraTransform.right, Vector3.up).normalized;
-        Vector3 direction = right * moveInput.x + forward * moveInput.y;
-        return direction;
+        return right * moveInput.x + forward * moveInput.y;
     }
 
     void RotateTowards(Vector3 moveDirection)
@@ -172,7 +177,13 @@ public class PlayerMovement : MonoBehaviour
         animator.SetFloat("Speed", inputMagnitude * animSpeed);
         animator.SetBool("IsRunning", isRunning && inputMagnitude > 0.1f);
         animator.SetBool("IsGrounded", isGrounded);
-        animator.SetBool("IsCombat", IsCombat);
+
+        // Update combat state only when changed
+        if (IsCombat != previousIsCombat)
+        {
+            animator.SetBool("IsCombat", IsCombat);
+            previousIsCombat = IsCombat;
+        }
 
         Vector3 moveDirection = GetMovementDirection();
         if (IsCombat)
@@ -202,6 +213,7 @@ public class PlayerMovement : MonoBehaviour
     public void RunInputHandler(InputAction.CallbackContext context)
     {
         isRunning = context.performed;
+        IsPlayerRunning = isRunning;
         Debug.Log($"Run: {isRunning}");
         if (!isMovementLocked)
         {
@@ -218,6 +230,11 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             animator.SetTrigger("jumpRun");
             Debug.Log("Jump triggered");
+
+            if (petFollow != null)
+            {
+                petFollow.Jump();
+            }
         }
     }
 
@@ -247,7 +264,6 @@ public class PlayerMovement : MonoBehaviour
         }
         return closest;
     }
-
 
     // Utility for skill scripts
     public void LockMovement(bool value)

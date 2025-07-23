@@ -19,6 +19,7 @@ public class AutoReturnParticle : MonoBehaviour
     }
 
     private IEnumerator ReturnAfterParticle()
+
     {
         // Chờ cho đến khi ParticleSystem hoàn thành
         yield return new WaitForSeconds(ps.main.duration);
