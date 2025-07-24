@@ -22,74 +22,64 @@ public class PetFollow : MonoBehaviour
     private Vector3 previousPosition;
     private float verticalVelocity;
     private bool isGrounded;
-
     void Start()
     {
         animator = GetComponent<Animator>();
         previousPosition = transform.position;
     }
-
     void Update()
-{
-    ApplyGravity(); 
-
-    GroundCheck(); 
-  
-    FollowLogic();
-
-    AnimateSpeed();
-}
-
-
-    void FollowLogic()
     {
-        if (!player || !isGrounded) return;
+        GroundCheck();
+        ApplyGravity();
+        Move();
+        AnimateSpeed();
+    }
+    void Move()
+    {
+        if (!player) return;
 
         Vector3 direction = player.position - transform.position;
         direction.y = 0f;
 
         float distance = direction.magnitude;
         float currentSpeed = PlayerMovement.IsPlayerRunning ? runSpeed : walkSpeed;
+        Vector3 moveDir = direction.normalized;
+       if (distance > followDistance + stopDistanceBuffer)
+       {
+           if (Vector3.Angle(transform.forward, moveDir) > minTurnAngle)
+           {
+               Quaternion targetRot = Quaternion.LookRotation(moveDir);
+               transform.rotation = Quaternion.Slerp(transform.rotation, targetRot, rotationSpeed * Time.deltaTime);
+           }
 
-        if (distance > followDistance + stopDistanceBuffer)
-        {
-            Vector3 moveDir = direction.normalized;
+           Vector3 targetPosition = player.position - moveDir * followDistance;
+           targetPosition.y= transform.position.y;
 
-            float angle = Vector3.Angle(transform.forward, moveDir);
-            if (angle > minTurnAngle)
-            {
-                Quaternion targetRotation = Quaternion.LookRotation(moveDir);
-                transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
-            }
-
-            Vector3 targetPosition = player.position - moveDir * followDistance;
-            targetPosition.y = transform.position.y;
-
-            transform.position = Vector3.MoveTowards(transform.position, targetPosition, currentSpeed * Time.deltaTime);
-        }
+           Vector3 horizontalMove = Vector3.MoveTowards(transform.position, targetPosition, currentSpeed * Time.deltaTime);
+           transform.position = new Vector3(horizontalMove.x, transform.position.y, horizontalMove.z);
+       }
+        transform.position += new Vector3(0f, verticalVelocity * Time.deltaTime, 0f);
     }
-
     void ApplyGravity()
     {
         if (!isGrounded)
         {
             verticalVelocity += gravity * Time.deltaTime;
-            transform.position += new Vector3(0, verticalVelocity * Time.deltaTime, 0);
+        }
 
-            // Nếu rơi chạm đất
-            if (IsTouchingGround())
-            {
-                transform.position = new Vector3(transform.position.x, GetGroundHeight(), transform.position.z);
-                verticalVelocity = 0f;
-                isGrounded = true;
-                animator.SetBool("isGrounded", true);
-            }
+        if (IsTouchingGround() && verticalVelocity <= 0f)
+        {
+            transform.position = new Vector3(transform.position.x, GetGroundHeight(), transform.position.z);
+            verticalVelocity = 0f;
+            isGrounded = true;
+            animator.SetBool("isGrounded", true);
+            animator.SetTrigger("Land");
         }
     }
-
     void GroundCheck()
     {
         isGrounded = IsTouchingGround();
+        animator.SetBool("isGrounded", isGrounded);
     }
 
     bool IsTouchingGround()
@@ -105,7 +95,6 @@ public class PetFollow : MonoBehaviour
         }
         return transform.position.y;
     }
-
     void AnimateSpeed()
     {
         float actualSpeed = (transform.position - previousPosition).magnitude / Time.deltaTime;
@@ -115,6 +104,7 @@ public class PetFollow : MonoBehaviour
     public void Jump()
     {
         if (!isGrounded) return;
+
 
         verticalVelocity = Mathf.Sqrt(-2f * gravity * jumpHeight);
         isGrounded = false;

@@ -54,6 +54,29 @@ public class PlayerAutoAim : MonoBehaviour
             direction.y = 0;
             aimPivot.forward = Vector3.Lerp(aimPivot.forward, direction.normalized, Time.deltaTime * 10f);
         }
+        if (currentTarget != null)
+        {
+            if (Vector3.Distance(transform.position, currentTarget.position) > lockRange)
+            {
+                UnlockTarget();
+                return;
+            }
+
+            // Quay player về phía enemy
+            Vector3 targetDirection = currentTarget.position - transform.position;
+            targetDirection.y = 0;
+            if (targetDirection != Vector3.zero)
+            {
+                Quaternion lookRotation = Quaternion.LookRotation(targetDirection);
+                transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 5f);
+            }
+
+            // Quay aimPivot nếu dùng riêng cho camera
+            Vector3 targetPosition = currentTarget.position + Vector3.up * targetYOffset;
+            Vector3 direction = targetPosition - aimPivot.position;
+            direction.y = 0;
+            aimPivot.forward = Vector3.Lerp(aimPivot.forward, direction.normalized, Time.deltaTime * 10f);
+        }
     }
 
     void LockTarget()

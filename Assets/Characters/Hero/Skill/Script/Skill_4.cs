@@ -1,12 +1,17 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 public class Skill4 : SkillBase
 {
-    public Transform projectileSpawnPoint;
+    [Header("Spawn Points")]
     public Transform auraSpawnPoint;
 
-    public ObjectPool projectilePool; // Gán trong Inspector
-    public ObjectPool auraPool;       // Gán trong Inspector
+    [Header("Object Pools")]
+    public ObjectPool projectilePool; // Dùng để spawn AOE
+    public ObjectPool auraPool;
+
+    [Header("Settings")]
+    public float aoeDuration = 2f; // Thời gian AOE tồn tại, có thể chỉnh trong Inspector
 
     private GameObject activeAura;
 
@@ -16,7 +21,6 @@ public class Skill4 : SkillBase
         movement.isMovementLocked = true;
     }
 
-    // Animation Event
     public void ShowAura_4()
     {
         if (activeAura == null && auraPool && auraSpawnPoint)
@@ -28,28 +32,26 @@ public class Skill4 : SkillBase
 
     public void FireProjectile_4()
     {
-        if (projectilePool && projectileSpawnPoint)
-        {
-            GameObject projectile = projectilePool.GetObject(projectileSpawnPoint.position, Quaternion.identity);
+        if (projectilePool == null) return;
 
-            Transform target = autoAim?.GetTarget();
+        Transform target = autoAim?.GetTarget();
+        if (target == null) return;
 
-            Vector3 dir;
-            if (target != null)
-                dir = (target.position - projectileSpawnPoint.position).normalized;
-            else
-                dir = transform.forward;
+        GameObject aoe = projectilePool.GetObject(target.position, Quaternion.identity);
 
-            projectile.transform.rotation = Quaternion.LookRotation(dir);
+        // Tùy chọn: nếu bạn có script gây damage, có thể gọi tại đây
 
-            // Gán hướng di chuyển cho ProjectileController
-            ProjectileController pc = projectile.GetComponent<ProjectileController>();
-            if (pc != null)
-            {
-                pc.SetDirection(dir);
-                pc.SetPool(projectilePool); 
-            }
-        }
+        StartCoroutine(DisableEffectAfterDelay(aoe, aoeDuration));
+    }
+
+    private IEnumerator DisableEffectAfterDelay(GameObject effect, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (projectilePool != null)
+            projectilePool.ReturnObject(effect);
+        else
+            Destroy(effect);
     }
 
     public void OnSkillEnd_4()
