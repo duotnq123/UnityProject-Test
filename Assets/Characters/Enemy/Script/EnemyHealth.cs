@@ -6,11 +6,12 @@ public class EnemyHealth : MonoBehaviour
 {
     public float maxHealth = 100f;
     private float currentHealth;
-    private bool isDead = false;
+    public bool isDead { get; private set; } = false;
 
     private Animator animator;
     private Collider col;
     private NavMeshAgent agent;
+    private EnemyPatrol enemyPatrol;
 
     void Awake()
     {
@@ -18,6 +19,7 @@ public class EnemyHealth : MonoBehaviour
         animator = GetComponent<Animator>();
         col = GetComponent<Collider>();
         agent = GetComponent<NavMeshAgent>();
+        enemyPatrol = GetComponent<EnemyPatrol>();
     }
 
     public void TakeDamage(float amount)
@@ -31,12 +33,38 @@ public class EnemyHealth : MonoBehaviour
         {
             Die();
         }
+        else
+        {
+            if (animator != null)
+                animator.SetTrigger("TakeDamage");
+
+            var attack = GetComponent<EnemyAttack>();
+            if (attack != null) attack.ResetAttack();
+
+            if (enemyPatrol != null && enemyPatrol.isInAlarmState)
+            {
+                enemyPatrol.CancelAlarm();
+            }
+        }
+    }
+
+    public void OnTakeDamageEnd()
+    {
+        if (isDead) return;
+
+        var attack = GetComponent<EnemyAttack>();
+        if (attack != null)
+        {
+            attack.OnHitEnd();
+        }
     }
 
     void Die()
     {
         isDead = true;
-        animator.SetTrigger("Die");
+
+        if (animator != null)
+            animator.SetTrigger("Die");
 
         if (agent != null && agent.isOnNavMesh)
             agent.isStopped = true;
@@ -44,16 +72,35 @@ public class EnemyHealth : MonoBehaviour
         if (col != null)
             col.enabled = false;
 
-        var patrol = GetComponent<EnemyPatrol>();
-        if (patrol != null) patrol.isDead = true;
+        if (enemyPatrol != null)
+            enemyPatrol.isDead = true;
 
         var attack = GetComponent<EnemyAttack>();
-        if (attack != null) attack.isDead = true;
+        if (attack != null)
+            attack.isDead = true;
+
+        // Báo cho PlayerAutoAim nếu đang lock enemy này
+        var playerAim = FindAnyObjectByType<PlayerAutoAim>();
+        if (playerAim != null)
+            playerAim.OnEnemyDied(transform);
     }
 
-    // Gọi từ Animation Event cuối animation chết
     public void OnDeathAnimationEnd()
     {
         gameObject.SetActive(false);
+    }
+
+    public void ResetHealth()
+    {
+        currentHealth = maxHealth;
+        isDead = false;
+
+        if (col != null)
+            col.enabled = true;
+
+        if (agent != null && agent.isOnNavMesh)
+            agent.isStopped = false;
+
+        animator.Rebind(); // Reset lại Animator
     }
 }
