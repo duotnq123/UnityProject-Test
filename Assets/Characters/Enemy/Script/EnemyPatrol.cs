@@ -94,14 +94,12 @@ public class EnemyPatrol : MonoBehaviour
 
     void DetectPlayer()
     {
-        if (isDead) return;
+        if (isDead || isChasing || isInAlarmState || alarmTriggered)
+            return;
 
         Collider[] hits = Physics.OverlapSphere(transform.position, detectionRadius, playerLayer);
         if (hits.Length > 0)
         {
-            // Nếu đã trigger alarm rồi thì không làm lại nữa
-            if (alarmTriggered) return;
-
             player = hits[0].transform;
 
             isInAlarmState = true;
@@ -112,7 +110,6 @@ public class EnemyPatrol : MonoBehaviour
             animator.SetBool("IsCombo", false);
         }
     }
-
     void Patrol()
     {
         if (agent.pathPending || agent.remainingDistance > 0.3f)

@@ -2640,6 +2640,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 1.8
+  attackCooldown: 1.2
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -2789,6 +2790,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 1.8
+  attackCooldown: 1.2
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -3126,7 +3128,7 @@ MonoBehaviour:
   auraSpawnPoint: {fileID: 1287933920}
   projectilePool: {fileID: 338902041}
   auraPool: {fileID: 1157181551}
-  aoeDuration: 2
+  aoeDuration: 30
 --- !u!114 &1287933924
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3662,6 +3664,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 1.8
+  attackCooldown: 1.2
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -4226,6 +4229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 1.8
+  attackCooldown: 1.2
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -5874,6 +5878,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   attackRange: 1.8
+  attackCooldown: 1.2
   playerLayer:
     serializedVersion: 2
     m_Bits: 64

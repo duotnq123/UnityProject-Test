@@ -12,6 +12,8 @@ public class EnemyHealth : MonoBehaviour
     private Collider col;
     private NavMeshAgent agent;
     private EnemyPatrol enemyPatrol;
+    private bool isTakingDamage = false;
+
 
     void Awake()
     {
@@ -35,6 +37,11 @@ public class EnemyHealth : MonoBehaviour
         }
         else
         {
+            isTakingDamage = true;
+
+            if (agent != null && agent.isOnNavMesh)
+                agent.isStopped = true;
+
             if (animator != null)
                 animator.SetTrigger("TakeDamage");
 
@@ -52,13 +59,17 @@ public class EnemyHealth : MonoBehaviour
     {
         if (isDead) return;
 
+        isTakingDamage = false;
+
+        if (agent != null && agent.isOnNavMesh)
+            agent.isStopped = false;
+
         var attack = GetComponent<EnemyAttack>();
         if (attack != null)
         {
             attack.OnHitEnd();
         }
     }
-
     void Die()
     {
         isDead = true;

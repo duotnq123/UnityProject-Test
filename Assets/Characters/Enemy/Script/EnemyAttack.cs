@@ -145,8 +145,7 @@ public class EnemyAttack : MonoBehaviour
         {
             if (hit.CompareTag("Player"))
             {
-                Debug.Log("Enemy dealt damage to player!");
-                // hit.GetComponent<PlayerHealth>()?.TakeDamage(damage);
+                Debug.Log("Enemy dealt damage to player!");  
             }
         }
     }

@@ -17,8 +17,8 @@ public class PlayerAutoAim : MonoBehaviour
 
     private PlayerMovement playerMovement;
 
-    // Danh sách các enemy đã bị loại khỏi danh sách lock
-    private HashSet<Transform> ignoredEnemies = new HashSet<Transform>();
+    // Danh sách các enemy đã chết hoặc không hợp lệ
+    private HashSet<Transform> invalidTargets = new HashSet<Transform>();
 
     void Awake()
     {
@@ -43,8 +43,8 @@ public class PlayerAutoAim : MonoBehaviour
     {
         if (currentTarget != null)
         {
-            if (!currentTarget.gameObject.activeInHierarchy || 
-                Vector3.Distance(transform.position, currentTarget.position) > lockRange)
+            // Nếu target ra khỏi range hoặc biến mất
+            if (!IsTargetValid(currentTarget))
             {
                 TryLockNewTargetOrUnlock();
                 return;
@@ -68,6 +68,7 @@ public class PlayerAutoAim : MonoBehaviour
 
         Vector3 directionToTarget = currentTarget.position - transform.position;
         directionToTarget.y = 0;
+
         if (directionToTarget != Vector3.zero)
         {
             Quaternion lookRotation = Quaternion.LookRotation(directionToTarget);
@@ -82,6 +83,7 @@ public class PlayerAutoAim : MonoBehaviour
     void LockTarget()
     {
         currentTarget = FindBestTarget();
+
         if (currentTarget != null)
         {
             playerMovement.lockOnTarget = currentTarget;
@@ -92,9 +94,6 @@ public class PlayerAutoAim : MonoBehaviour
     void UnlockTarget()
     {
         Debug.Log("Target unlocked");
-        if (currentTarget != null)
-            ignoredEnemies.Add(currentTarget);
-
         currentTarget = null;
         playerMovement.lockOnTarget = null;
     }
@@ -122,7 +121,7 @@ public class PlayerAutoAim : MonoBehaviour
 
         foreach (var enemy in enemies)
         {
-            if (!enemy.gameObject.activeInHierarchy || ignoredEnemies.Contains(enemy.transform)) continue;
+            if (!IsTargetValid(enemy.transform)) continue;
 
             Vector3 dirToEnemy = (enemy.transform.position - transform.position).normalized;
             float angle = Vector3.Angle(transform.forward, dirToEnemy);
@@ -138,20 +137,41 @@ public class PlayerAutoAim : MonoBehaviour
         return bestTarget;
     }
 
+    bool IsTargetValid(Transform target)
+    {
+        if (target == null || !target.gameObject.activeInHierarchy) return false;
+        if (invalidTargets.Contains(target)) return false;
+        if (Vector3.Distance(transform.position, target.position) > lockRange) return false;
+
+        return true;
+    }
+
     public Transform GetTarget()
     {
         return currentTarget;
     }
 
-    // Gọi từ enemy khi chết
+    /// <summary>
+    /// Gọi từ enemy khi chết để loại khỏi danh sách lock
+    /// </summary>
     public void OnEnemyDied(Transform enemy)
     {
+        if (enemy == null) return;
+
         if (currentTarget == enemy)
         {
             Debug.Log("Locked-on enemy died");
             TryLockNewTargetOrUnlock();
         }
 
-        ignoredEnemies.Add(enemy);
+        invalidTargets.Add(enemy);
+    }
+
+    /// <summary>
+    /// Nếu muốn reset sau mỗi đợt combat
+    /// </summary>
+    public void ResetInvalidTargets()
+    {
+        invalidTargets.Clear();
     }
 }
