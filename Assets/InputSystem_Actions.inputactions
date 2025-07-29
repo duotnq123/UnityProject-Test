@@ -132,6 +132,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "Skill 5",
+                    "type": "Button",
+                    "id": "e1dab465-cd1b-4e89-80fc-1452ce96b2c5",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "LockOn",
                     "type": "Button",
                     "id": "e4bbfcce-ce9e-490e-a260-0150872969fd",
@@ -590,6 +599,17 @@
                     "processors": "",
                     "groups": ";Keyboard&Mouse",
                     "action": "LockOn",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9273bc6c-70bf-44da-bf82-6f738ce2b339",
+                    "path": "<Keyboard>/f5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": ";Keyboard&Mouse",
+                    "action": "Skill 5",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -1,19 +1,25 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
 [RequireComponent(typeof(Animator))]
 public class EnemyHealth : MonoBehaviour
 {
+    [Header("Health")]
     public float maxHealth = 100f;
     private float currentHealth;
-    public bool isDead { get; private set; } = false;
 
+    [Header("State Flags")]
+    public bool isDead { get; private set; } = false;
+    private bool isTakingDamage = false;
+    private bool isKnockedBack = false;
+
+    [Header("Components")]
     private Animator animator;
     private Collider col;
     private NavMeshAgent agent;
-    private EnemyPatrol enemyPatrol;
-    private bool isTakingDamage = false;
-
+    private EnemyPatrol patrol;
+    private EnemyAttack attack;
 
     void Awake()
     {
@@ -21,7 +27,8 @@ public class EnemyHealth : MonoBehaviour
         animator = GetComponent<Animator>();
         col = GetComponent<Collider>();
         agent = GetComponent<NavMeshAgent>();
-        enemyPatrol = GetComponent<EnemyPatrol>();
+        patrol = GetComponent<EnemyPatrol>();
+        attack = GetComponent<EnemyAttack>();
     }
 
     public void TakeDamage(float amount)
@@ -37,20 +44,27 @@ public class EnemyHealth : MonoBehaviour
         }
         else
         {
+            // Vào trạng thái bị đánh
             isTakingDamage = true;
 
             if (agent != null && agent.isOnNavMesh)
                 agent.isStopped = true;
 
-            if (animator != null)
-                animator.SetTrigger("TakeDamage");
+            animator?.SetTrigger("TakeDamage");
 
-            var attack = GetComponent<EnemyAttack>();
-            if (attack != null) attack.ResetAttack();
-
-            if (enemyPatrol != null && enemyPatrol.isInAlarmState)
+            if (attack != null)
             {
-                enemyPatrol.CancelAlarm();
+                attack.ResetAttack();
+                attack.SetTemporarilyDisabled(true);
+            }
+
+            if (patrol != null)
+            {
+                if (patrol.isInAlarmState)
+                    patrol.CancelAlarm();
+
+                patrol.SetTemporarilyDisabled(true);
+                patrol.enabled = false;
             }
         }
     }
@@ -61,43 +75,108 @@ public class EnemyHealth : MonoBehaviour
 
         isTakingDamage = false;
 
-        if (agent != null && agent.isOnNavMesh)
+        if (!isKnockedBack && agent != null && agent.isOnNavMesh)
             agent.isStopped = false;
 
-        var attack = GetComponent<EnemyAttack>();
+        animator.ResetTrigger("TakeDamage");
+
         if (attack != null)
+            attack.SetTemporarilyDisabled(false);
+
+        if (patrol != null)
         {
-            attack.OnHitEnd();
+            patrol.SetTemporarilyDisabled(false);
+            patrol.enabled = true;
         }
     }
-    void Die()
+
+    public void ApplyKnockback(Vector3 direction, float force)
+    {
+        if (isDead || !gameObject.activeInHierarchy) return;
+
+        isKnockedBack = true;
+
+        if (agent != null && agent.enabled)
+            agent.isStopped = true;
+
+        if (attack != null)
+        {
+            attack.SetTarget(null);
+            attack.SetTemporarilyDisabled(true);
+        }
+
+        if (patrol != null)
+        {
+            patrol.SetTemporarilyDisabled(true);
+            patrol.enabled = false;
+        }
+
+        StartCoroutine(KnockbackRoutine(direction.normalized, force));
+    }
+
+    private IEnumerator KnockbackRoutine(Vector3 direction, float force)
+    {
+        float duration = 0.25f;
+        float timer = 0f;
+
+        while (timer < duration)
+        {
+            transform.position += direction * force * Time.deltaTime;
+            timer += Time.deltaTime;
+            yield return null;
+        }
+
+        if (isDead) yield break;
+
+        if (agent != null)
+        {
+            agent.enabled = true;
+            agent.Warp(transform.position);
+            agent.isStopped = false;
+        }
+
+        if (patrol != null)
+        {
+            patrol.SetTemporarilyDisabled(false);
+            patrol.enabled = true;
+        }
+
+        if (attack != null)
+            attack.SetTemporarilyDisabled(false);
+
+        isKnockedBack = false;
+    }
+
+    private void Die()
     {
         isDead = true;
 
-        if (animator != null)
-            animator.SetTrigger("Die");
+        animator?.SetTrigger("Die");
 
         if (agent != null && agent.isOnNavMesh)
+        {
             agent.isStopped = true;
+            agent.ResetPath();
+        }
 
         if (col != null)
             col.enabled = false;
 
-        if (enemyPatrol != null)
-            enemyPatrol.isDead = true;
+        if (patrol != null)
+            patrol.isDead = true;
 
-        var attack = GetComponent<EnemyAttack>();
         if (attack != null)
             attack.isDead = true;
 
-        // Báo cho PlayerAutoAim nếu đang lock enemy này
-        var playerAim = FindAnyObjectByType<PlayerAutoAim>();
-        if (playerAim != null)
-            playerAim.OnEnemyDied(transform);
+        var aim = FindAnyObjectByType<PlayerAutoAim>();
+        aim?.OnEnemyDied(transform);
     }
 
     public void OnDeathAnimationEnd()
     {
+        if (agent != null)
+            agent.enabled = false;
+
         gameObject.SetActive(false);
     }
 
@@ -105,6 +184,8 @@ public class EnemyHealth : MonoBehaviour
     {
         currentHealth = maxHealth;
         isDead = false;
+        isTakingDamage = false;
+        isKnockedBack = false;
 
         if (col != null)
             col.enabled = true;
@@ -112,6 +193,6 @@ public class EnemyHealth : MonoBehaviour
         if (agent != null && agent.isOnNavMesh)
             agent.isStopped = false;
 
-        animator.Rebind(); // Reset lại Animator
+        animator?.Rebind();
     }
 }

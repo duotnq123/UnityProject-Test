@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.AI;
+using System.Collections;
 
-[RequireComponent(typeof(Animator))]
-[RequireComponent(typeof(NavMeshAgent))]
+[RequireComponent(typeof(Animator), typeof(NavMeshAgent))]
 public class EnemyAttack : MonoBehaviour
 {
     [Header("Attack Settings")]
@@ -16,10 +16,10 @@ public class EnemyAttack : MonoBehaviour
     private Transform target;
 
     private bool isAttacking = false;
-    private bool useFirstAttack = true;
-    private float lastAttackTime = -999f;
+    public bool isDead = false;
+    private bool isTemporarilyDisabled = false;
 
-    [HideInInspector] public bool isDead = false;
+    private Coroutine attackCoroutine;
 
     void Awake()
     {
@@ -34,25 +34,28 @@ public class EnemyAttack : MonoBehaviour
 
     void Update()
     {
-        if (isDead || target == null) return;
-
-        float distanceToTarget = Vector3.Distance(transform.position, target.position);
+        if (isDead || isTemporarilyDisabled || target == null || !agent.isOnNavMesh)
+            return;
 
         if (isAttacking)
         {
-            // Đang attack thì không làm gì khác (chờ animation kết thúc)
-            FaceTarget();
+            // Ngăn mọi di chuyển trong lúc attack
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
             return;
         }
 
-        if (distanceToTarget <= attackRange)
+        float distance = Vector3.Distance(transform.position, target.position);
+
+        if (distance <= attackRange)
         {
             agent.isStopped = true;
+            agent.velocity = Vector3.zero;
             FaceTarget();
 
-            if (Time.time >= lastAttackTime + attackCooldown)
+            if (attackCoroutine == null)
             {
-                StartAttack();
+                attackCoroutine = StartCoroutine(AttackRoutine());
             }
         }
         else
@@ -62,91 +65,104 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-    private void FaceTarget()
+
+    IEnumerator AttackRoutine()
     {
-        Vector3 lookDir = new Vector3(target.position.x, transform.position.y, target.position.z);
-        transform.LookAt(lookDir);
+        isAttacking = true;
+        agent.isStopped = true;
+        animator.SetTrigger("Attack");
+        FaceTarget();
+
+        // Chờ animation tấn công hoàn tất thông qua Animation Event OnAttackEnd
+        yield return new WaitForSeconds(attackCooldown);
+
+        // Nếu Animation Event không gọi kịp thì fallback tại đây
+        EndAttackSafely();
     }
 
-    private void StartAttack()
+    void FaceTarget()
     {
         if (target == null) return;
-        float distance = Vector3.Distance(transform.position, target.position);
-        if (distance > attackRange) return;
 
-        isAttacking = true;
-        lastAttackTime = Time.time;
+        Vector3 direction = target.position - transform.position;
+        direction.y = 0f;
 
-        animator.SetBool("IsCombo", !useFirstAttack);
-        animator.ResetTrigger("Attack");
-        animator.SetTrigger("Attack");
-
-        useFirstAttack = !useFirstAttack;
-
-        agent.isStopped = true;
+        if (direction.sqrMagnitude > 0.01f)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 10f);
+        }
     }
 
-    // GỌI từ cuối animation Attack qua animation event
+    // Gọi từ Animation Event ở khung giữa
+    public void DealDamage()
+    {
+        if (isDead || isTemporarilyDisabled || target == null) return;
+
+        Vector3 hitCenter = transform.position + transform.forward * (attackRange * 0.5f);
+        float radius = attackRange * 0.5f;
+
+        Collider[] hits = Physics.OverlapSphere(hitCenter, radius, playerLayer);
+        foreach (var hit in hits)
+        {
+            if (hit.CompareTag("Player"))
+            {
+                Debug.Log("Enemy dealt damage to Player.");
+                // hit.GetComponent<PlayerHealth>()?.TakeDamage(damage);
+            }
+        }
+    }
+
+    // Gọi từ Animation Event ở cuối clip tấn công
     public void OnAttackEnd()
     {
-        isAttacking = false;
+        EndAttackSafely();
+        Debug.Log("Enemy finished attack animation.");
+    }
 
-        // Nếu target vẫn còn trong range, không cần SetDestination vì sẽ tự update ở Update()
-        if (target != null)
+    private void EndAttackSafely()
+    {
+        if (attackCoroutine != null)
         {
-            float dist = Vector3.Distance(transform.position, target.position);
-            if (dist > attackRange)
-            {
-                agent.isStopped = false;
-                agent.SetDestination(target.position);
-            }
+            StopCoroutine(attackCoroutine);
+            attackCoroutine = null;
+        }
+
+        isAttacking = false;
+        agent.isStopped = false;
+    }
+
+    public void SetTemporarilyDisabled(bool disabled)
+    {
+        isTemporarilyDisabled = disabled;
+
+        if (disabled)
+        {
+            ResetAttack();
+            agent.isStopped = true;
         }
     }
 
     public void ResetAttack()
     {
+        if (attackCoroutine != null)
+        {
+            StopCoroutine(attackCoroutine);
+            attackCoroutine = null;
+        }
+
         isAttacking = false;
-        useFirstAttack = true;
         animator.ResetTrigger("Attack");
-        animator.SetBool("IsCombo", false);
+        agent.isStopped = false;
     }
 
-    public void OnHitEnd()
+    public void SetDead(bool value)
     {
-        if (isDead || target == null) return;
-
-        float dist = Vector3.Distance(transform.position, target.position);
-
-        if (dist <= attackRange)
+        isDead = value;
+        if (value)
         {
+            ResetAttack();
             agent.isStopped = true;
-
-            if (!isAttacking && Time.time >= lastAttackTime + attackCooldown)
-            {
-                StartAttack();
-            }
-        }
-        else
-        {
-            agent.isStopped = false;
-            agent.SetDestination(target.position);
-        }
-    }
-
-    // Gọi từ animation event tại khung chạm
-    public void DealDamage()
-    {
-        if (isDead) return;
-
-        Vector3 hitPos = transform.position + transform.forward * (attackRange * 0.5f);
-        Collider[] hits = Physics.OverlapSphere(hitPos, attackRange * 0.5f, playerLayer);
-
-        foreach (var hit in hits)
-        {
-            if (hit.CompareTag("Player"))
-            {
-                Debug.Log("Enemy dealt damage to player!");  
-            }
         }
     }
 }

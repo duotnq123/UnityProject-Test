@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
 
 public class Skill4 : SkillBase
 {
@@ -7,11 +6,8 @@ public class Skill4 : SkillBase
     public Transform auraSpawnPoint;
 
     [Header("Object Pools")]
-    public ObjectPool projectilePool; // Dùng để spawn AOE
+    public ObjectPool projectilePool;  
     public ObjectPool auraPool;
-
-    [Header("Settings")]
-    public float aoeDuration = 2f; // Thời gian AOE tồn tại, có thể chỉnh trong Inspector
 
     private GameObject activeAura;
 
@@ -37,21 +33,8 @@ public class Skill4 : SkillBase
         Transform target = autoAim?.GetTarget();
         if (target == null) return;
 
-        GameObject aoe = projectilePool.GetObject(target.position, Quaternion.identity);
-
-        // Tùy chọn: nếu bạn có script gây damage, có thể gọi tại đây
-
-        StartCoroutine(DisableEffectAfterDelay(aoe, aoeDuration));
-    }
-
-    private IEnumerator DisableEffectAfterDelay(GameObject effect, float delay)
-    {
-        yield return new WaitForSeconds(delay);
-
-        if (projectilePool != null)
-            projectilePool.ReturnObject(effect);
-        else
-            Destroy(effect);
+        projectilePool.GetObject(target.position, Quaternion.identity);
+        // AOE tự lo việc return sau khi hết hiệu ứng, không cần xử lý ở đây
     }
 
     public void OnSkillEnd_4()

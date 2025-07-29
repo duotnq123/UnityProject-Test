@@ -14516,6 +14516,7 @@ GameObject:
   - component: {fileID: 3839975240736949672}
   - component: {fileID: -3064552117296538950}
   - component: {fileID: 59109194397667059}
+  - component: {fileID: 7338655574655625451}
   m_Layer: 0
   m_Name: Skill_2
   m_TagString: Untagged
@@ -19386,7 +19387,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 1
+  m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -19404,6 +19405,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 15
   maxDistance: 60
+  delayBeforeReturn: 5
 --- !u!114 &-3064552117296538950
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -19464,6 +19466,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ede7b50aa1bce14ca41c614d30c8131, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &7338655574655625451
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7314526620251459061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82aeb3c0204e593499172dc3a33f919a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 20
+  enableKnockback: 0
+  knockbackForce: 5
+  knockbackExtraDirection: {x: 0, y: 1, z: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!1 &7333162295918005762
 GameObject:
   m_ObjectHideFlags: 0

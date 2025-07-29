@@ -1,17 +1,25 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.AI;
 
 [RequireComponent(typeof(Collider))]
 public class AOEDamage : MonoBehaviour
 {
+    [Header("Damage Settings")]
     public float damage = 20f;
-    public float tickInterval = 1f;    // Bao lâu gây damage 1 lần
-    public float duration = 2f;        // Tổng thời gian tồn tại
+    public float tickInterval = 1f;
+    public float duration = 2f;
     public LayerMask enemyLayer;
+
+    [Header("Knockback Settings")]
+    public bool enableKnockback = false;
+    public float knockbackForce = 5f;
+    public Vector3 knockbackExtraDirection = Vector3.up;
 
     private List<Collider> enemiesInRange = new List<Collider>();
     private Coroutine damageRoutine;
+    public bool autoDisable = true;
 
     void OnEnable()
     {
@@ -30,7 +38,6 @@ public class AOEDamage : MonoBehaviour
     void OnTriggerEnter(Collider other)
     {
         if ((enemyLayer.value & (1 << other.gameObject.layer)) == 0) return;
-
         if (!enemiesInRange.Contains(other))
             enemiesInRange.Add(other);
     }
@@ -43,34 +50,60 @@ public class AOEDamage : MonoBehaviour
 
     IEnumerator DamageOverTime()
     {
-        while (true)
+        float elapsed = 0f;
+
+        while (elapsed < duration)
         {
             for (int i = enemiesInRange.Count - 1; i >= 0; i--)
             {
                 Collider col = enemiesInRange[i];
                 if (col == null) continue;
 
-                // Gây damage cho Enemy
                 EnemyHealth enemy = col.GetComponent<EnemyHealth>();
                 if (enemy != null)
                 {
-                    enemy.TakeDamage(damage);
-                }
+                    // Knockback luôn (ngay cả khi không gây damage)
+                    if (enableKnockback)
+                        ApplyKnockback(col);
 
-                // Phá object có thể phá vỡ (Breakable)
-                BreakableObject breakable = col.GetComponent<BreakableObject>();
-                if (breakable != null)
-                {
-                    breakable.Break(); // hoặc .TakeDamage(...) nếu có HP
+                    // Gây damage nếu chưa chết
+                    if (!enemy.isDead)
+                        enemy.TakeDamage(damage);
                 }
             }
 
+            elapsed += tickInterval;
             yield return new WaitForSeconds(tickInterval);
         }
+
+        DisableAOE();
+    }
+
+    void ApplyKnockback(Collider col)
+    {
+        EnemyHealth enemy = col.GetComponent<EnemyHealth>();
+        if (enemy == null) return;
+
+        Vector3 direction = (col.transform.position - transform.position);
+        direction.y = 0f;
+        direction.Normalize();
+
+        Vector3 finalDir = direction + knockbackExtraDirection.normalized;
+        finalDir.Normalize();
+
+        enemy.ApplyKnockback(finalDir, knockbackForce);
+    }
+
+
+    IEnumerator ReenableNavMesh(NavMeshAgent agent, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        if (agent != null) agent.enabled = true;
     }
 
     void DisableAOE()
     {
-        gameObject.SetActive(false); // hoặc Destroy(gameObject) nếu không dùng pool
+        if (autoDisable)
+        gameObject.SetActive(false); // hoặc Destroy nếu không dùng pooling
     }
 }

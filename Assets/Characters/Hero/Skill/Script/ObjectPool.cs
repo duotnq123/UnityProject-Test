@@ -20,10 +20,16 @@ public class ObjectPool : MonoBehaviour
 
         for (int i = 0; i < initialSize; i++)
         {
-            GameObject obj = Instantiate(prefab, transform);
-            obj.SetActive(false);
-            pool.Enqueue(obj);
+            CreateAndAddToPool();
         }
+    }
+
+    private GameObject CreateAndAddToPool()
+    {
+        GameObject obj = Instantiate(prefab, transform);
+        obj.SetActive(false);
+        pool.Enqueue(obj);
+        return obj;
     }
 
     /// <summary>
@@ -33,31 +39,46 @@ public class ObjectPool : MonoBehaviour
     {
         GameObject obj = null;
 
-        if (pool.Count > 0)
+        // Lấy từ pool nếu có
+        while (pool.Count > 0)
         {
             obj = pool.Dequeue();
-        }
-        else if (autoExpand)
-        {
-            obj = Instantiate(prefab, transform);
-        }
-        else
-        {
-            Debug.LogWarning($"[{gameObject.name}] Pool exhausted and autoExpand is off!");
-            return null;
+
+            // Nếu object đã bị Destroy, bỏ qua
+            if (obj == null)
+                continue;
+
+            break;
         }
 
-        obj.transform.SetParent(null); // đảm bảo nó không bị parent làm lệch scale/position
-        obj.transform.position = position;
-        obj.transform.rotation = rotation;
-        obj.SetActive(true);
-
-        // Reset particle system nếu có
-        var psArray = obj.GetComponentsInChildren<ParticleSystem>(true);
-        foreach (var ps in psArray)
+        // Nếu không lấy được object hợp lệ
+        if (obj == null)
         {
-            ps.Clear(true);
-            ps.Play(true);
+            if (autoExpand)
+            {
+                obj = CreateAndAddToPool();
+                pool.Dequeue(); // bỏ phần tử mới tạo ra khỏi hàng đợi để dùng
+            }
+            else
+            {
+                Debug.LogWarning($"[{gameObject.name}] Pool exhausted and autoExpand is off!");
+                return null;
+            }
+        }
+
+        if (obj != null)
+        {
+            obj.transform.SetParent(null);
+            obj.transform.SetPositionAndRotation(position, rotation);
+            obj.SetActive(true);
+
+            // Reset particle nếu có
+            var psArray = obj.GetComponentsInChildren<ParticleSystem>(true);
+            foreach (var ps in psArray)
+            {
+                ps.Clear(true);
+                ps.Play(true);
+            }
         }
 
         return obj;
@@ -70,8 +91,11 @@ public class ObjectPool : MonoBehaviour
     {
         if (obj == null) return;
 
-        obj.SetActive(false);
-        obj.transform.SetParent(transform); // để gọn trong hierarchy
-        pool.Enqueue(obj);
+        if (!pool.Contains(obj)) // tránh double enqueue
+        {
+            obj.SetActive(false);
+            obj.transform.SetParent(transform);
+            pool.Enqueue(obj);
+        }
     }
 }

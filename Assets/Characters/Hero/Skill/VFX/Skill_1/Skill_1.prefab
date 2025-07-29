@@ -4923,8 +4923,8 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3, y: 3, z: 3}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 2, y: 2, z: 2}
+  m_Center: {x: -0.22446577, y: -0.24813111, z: -0.3644087}
 --- !u!1 &496487245117367874
 GameObject:
   m_ObjectHideFlags: 0
@@ -9797,9 +9797,9 @@ BoxCollider:
   m_LayerOverridePriority: 0
   m_IsTrigger: 1
   m_ProvidesContacts: 0
-  m_Enabled: 1
+  m_Enabled: 0
   serializedVersion: 3
-  m_Size: {x: 3, y: 3, z: 3}
+  m_Size: {x: 2, y: 2, z: 2}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &6566140890059193891
 GameObject:
@@ -9960,6 +9960,7 @@ GameObject:
   - component: {fileID: -4029483514134601831}
   - component: {fileID: 2008657138743439993}
   - component: {fileID: 8611186138681147374}
+  - component: {fileID: 3437865087983769568}
   m_Layer: 0
   m_Name: Skill_1
   m_TagString: Untagged
@@ -14992,7 +14993,7 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 3, y: 3, z: 3}
+  m_Size: {x: 2, y: 2, z: 2}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!54 &-4029483514134601831
 Rigidbody:
@@ -15017,7 +15018,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 0
-  m_IsKinematic: 1
+  m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -15047,4 +15048,23 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 15
   maxDistance: 20
-  projectilePool: {fileID: 0}
+  delayBeforeReturn: 5
+--- !u!114 &3437865087983769568
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9027514048236820045}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82aeb3c0204e593499172dc3a33f919a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 20
+  enableKnockback: 0
+  knockbackForce: 5
+  knockbackExtraDirection: {x: 0, y: 1, z: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128

@@ -7,6 +7,7 @@ public class PlayerSkillManager : MonoBehaviour
     public Skill2 skill2;
     public Skill3 skill3;
     public Skill4 skill4;
+    public Skill5 skill5;
       public bool isSkillPlaying = false;
 
     public void On1(InputAction.CallbackContext context)
@@ -50,6 +51,16 @@ public class PlayerSkillManager : MonoBehaviour
                 skill4.TryUseSkill();
             else
                 Debug.LogWarning("Skill 4 chưa được gán!");
+        }
+    }
+    public void On5(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            if (skill5 != null)
+                skill5.TryUseSkill();
+            else
+                Debug.LogWarning("Skill 5 chưa được gán!");
         }
     }
 }

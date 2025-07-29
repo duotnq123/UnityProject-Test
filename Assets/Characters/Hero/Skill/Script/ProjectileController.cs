@@ -1,26 +1,17 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 [RequireComponent(typeof(Collider))]
 public class ProjectileController : MonoBehaviour
 {
     public float speed = 10f;
     public float maxDistance = 20f;
+    public float delayBeforeReturn = 5f;
 
     private Vector3 startPos;
-    private ObjectPool projectilePool; 
+    private ObjectPool projectilePool;
     private Vector3 direction = Vector3.forward;
     private bool isReturning = false;
-
-    private System.Collections.IEnumerator DelayedReturnToPool(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        ReturnToPool();
-    }
-
-    public void SetDirection(Vector3 dir)
-    {
-        direction = dir.normalized;
-    }
 
     void Awake()
     {
@@ -32,7 +23,7 @@ public class ProjectileController : MonoBehaviour
 
     void OnEnable()
     {
-        startPos = transform.position; 
+        startPos = transform.position;
         isReturning = false;
     }
 
@@ -49,40 +40,50 @@ public class ProjectileController : MonoBehaviour
         }
     }
 
+    public void SetDirection(Vector3 dir)
+    {
+        direction = dir.normalized;
+    }
+
+    public void SetPool(ObjectPool pool)
+    {
+        projectilePool = pool;
+    }
+
     void OnTriggerEnter(Collider other)
     {
         if (isReturning) return;
 
         Debug.Log("Projectile hit: " + other.name);
 
-        if (other.CompareTag("Enemy"))
-        {
-            StartCoroutine(DelayedReturnToPool(5f));  // Delay trả đạn
-            return;
-        }
-
         var breakable = other.GetComponent<BreakableObject>();
         if (breakable != null)
         {
-            Debug.Log("Breakable hit! Breaking...");
             breakable.Break();
             ReturnToPool();
         }
     }
 
-    void ReturnToPool()
+    private IEnumerator DelayedReturnToPool(float delay)
     {
-        if (isReturning) return;
-        isReturning = true;
+        yield return new WaitForSeconds(delay);
+        StartCoroutine(ActuallyReturnToPool());
+    }
 
+    private IEnumerator ActuallyReturnToPool()
+    {
+        yield return null; // chờ 1 frame để coroutine không lỗi nếu bị disable
         if (projectilePool != null)
             projectilePool.ReturnObject(gameObject);
         else
-            Debug.LogWarning($"Cannot return {gameObject.name}: projectilePool is null!");
+            Destroy(gameObject);
     }
 
-    public void SetPool(ObjectPool pool)
+    void ReturnToPool()
     {
-        projectilePool = pool;
+        if (projectilePool != null)
+            projectilePool.ReturnObject(gameObject);
+        else
+            Destroy(gameObject);
     }
 }

@@ -230,11 +230,6 @@ public class PlayerMovement : MonoBehaviour
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             animator.SetTrigger("jumpRun");
             Debug.Log("Jump triggered");
-
-            if (petFollow != null)
-            {
-                petFollow.Jump();
-            }
         }
     }
 

@@ -30,6 +30,8 @@ public class EnemyPatrol : MonoBehaviour
     private bool isChasing = false;
     [HideInInspector] public bool isDead = false;
 
+    private bool isTemporarilyDisabled = false;
+
     void Start()
     {
         agent = GetComponent<NavMeshAgent>();
@@ -44,7 +46,7 @@ public class EnemyPatrol : MonoBehaviour
 
     void Update()
     {
-        if (isDead) return;
+        if (isDead || !agent.isOnNavMesh || isTemporarilyDisabled) return;
 
         animator.SetFloat("Speed", agent.velocity.magnitude);
 
@@ -62,15 +64,7 @@ public class EnemyPatrol : MonoBehaviour
 
             if (distance > lostPlayerDistance)
             {
-                // Player thoát khỏi tầm -> dừng chase và cho phép alarm lại nếu phát hiện mới
-                isChasing = false;
-                isInAlarmState = false;
-                alarmTriggered = false;
-                player = null;
-
-                agent.speed = patrolSpeed;
-                enemyAttack.SetTarget(null);
-                GoToNextPatrolPoint();
+                ResetChase();
                 return;
             }
 
@@ -101,15 +95,15 @@ public class EnemyPatrol : MonoBehaviour
         if (hits.Length > 0)
         {
             player = hits[0].transform;
-
             isInAlarmState = true;
             alarmTriggered = true;
-            agent.speed = chaseSpeed;
 
+            agent.speed = chaseSpeed;
             animator.SetTrigger("Alarm");
             animator.SetBool("IsCombo", false);
         }
     }
+
     void Patrol()
     {
         if (agent.pathPending || agent.remainingDistance > 0.3f)
@@ -132,12 +126,16 @@ public class EnemyPatrol : MonoBehaviour
         waitTimer = 0f;
     }
 
-    void OnDrawGizmosSelected()
+    void ResetChase()
     {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, detectionRadius);
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(transform.position, lostPlayerDistance);
+        isChasing = false;
+        isInAlarmState = false;
+        alarmTriggered = false;
+        player = null;
+
+        agent.speed = patrolSpeed;
+        enemyAttack.SetTarget(null);
+        GoToNextPatrolPoint();
     }
 
     public void OnAlarmFinished()
@@ -149,42 +147,47 @@ public class EnemyPatrol : MonoBehaviour
             isChasing = true;
             agent.speed = chaseSpeed;
             agent.isStopped = false;
-            agent.SetDestination(player.position);
+
+            if (agent.isOnNavMesh)
+                agent.SetDestination(player.position);
         }
         else
         {
-            // Không còn player → quay lại patrol
-            isChasing = false;
-            agent.speed = patrolSpeed;
-            agent.isStopped = false;
-            GoToNextPatrolPoint();
+            ResetChase();
         }
     }
 
     public void ResumePatrolAfterHit()
     {
         if (isDead) return;
-
-        isChasing = false;
-        player = null;
-        alarmTriggered = false;
-        isInAlarmState = false;
-
-        agent.speed = patrolSpeed;
-        agent.isStopped = false;
-        GoToNextPatrolPoint();
+        ResetChase();
     }
 
     public void CancelAlarm()
     {
         isInAlarmState = false;
-        agent.isStopped = false;
         isChasing = true;
+        agent.isStopped = false;
 
         if (player != null)
         {
             agent.speed = chaseSpeed;
-            agent.SetDestination(player.position);
+
+            if (agent.isOnNavMesh)
+                agent.SetDestination(player.position);
         }
+    }
+
+    public void SetTemporarilyDisabled(bool state)
+    {
+        isTemporarilyDisabled = state;
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawWireSphere(transform.position, detectionRadius);
+        Gizmos.color = Color.yellow;
+        Gizmos.DrawWireSphere(transform.position, lostPlayerDistance);
     }
 }

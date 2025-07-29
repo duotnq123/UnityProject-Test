@@ -150,10 +150,6 @@ public class PlayerAutoAim : MonoBehaviour
     {
         return currentTarget;
     }
-
-    /// <summary>
-    /// Gọi từ enemy khi chết để loại khỏi danh sách lock
-    /// </summary>
     public void OnEnemyDied(Transform enemy)
     {
         if (enemy == null) return;
@@ -166,10 +162,6 @@ public class PlayerAutoAim : MonoBehaviour
 
         invalidTargets.Add(enemy);
     }
-
-    /// <summary>
-    /// Nếu muốn reset sau mỗi đợt combat
-    /// </summary>
     public void ResetInvalidTargets()
     {
         invalidTargets.Clear();
