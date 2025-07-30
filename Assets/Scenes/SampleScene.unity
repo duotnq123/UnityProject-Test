@@ -1715,9 +1715,6 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1287933916}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1287933918}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
       insertIndex: -1
@@ -1742,13 +1739,16 @@ PrefabInstance:
       addedObject: {fileID: 1287933934}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1287933929}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
-      insertIndex: -1
       addedObject: {fileID: 1287933931}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1287933933}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1287933929}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1287933916}
   m_SourcePrefab: {fileID: 100100000, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
 --- !u!1001 &818041391
 PrefabInstance:
@@ -2653,7 +2653,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -2756,7 +2756,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -2817,7 +2817,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -3810,7 +3810,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -4405,7 +4405,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
@@ -6134,7 +6134,7 @@ Rigidbody:
   m_ImplicitCom: 1
   m_ImplicitTensor: 1
   m_UseGravity: 1
-  m_IsKinematic: 0
+  m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0

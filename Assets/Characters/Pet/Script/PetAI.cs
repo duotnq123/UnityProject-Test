@@ -8,21 +8,15 @@ public class PetAI : MonoBehaviour
     private Animator animator;
     private Transform currentTarget;
 
-    [Header("Combat")]
+    [Header("Combat Settings")]
     public float attackRange = 1.5f;
     public float attackCooldown = 1.5f;
+    public float damage = 20f;
     private float lastAttackTime;
+    private bool isAttacking = false;
 
-    [Header("Movement")]
+    [Header("Movement Settings")]
     public float moveSpeed = 5f;
-
-    void OnEnable()
-    {
-    agent.speed = moveSpeed;
-    FindNewTarget();
-}
-
-
     private Vector3 previousPosition;
 
     void Awake()
@@ -31,9 +25,26 @@ public class PetAI : MonoBehaviour
         animator = GetComponent<Animator>();
         previousPosition = transform.position;
     }
+
+    void OnEnable()
+    {
+        agent.speed = moveSpeed;
+        agent.updateRotation = false;
+        isAttacking = false;
+        lastAttackTime = 0f;
+        FindNewTarget();
+    }
+
     void Update()
     {
         if (currentTarget == null || !currentTarget.gameObject.activeInHierarchy)
+        {
+            FindNewTarget();
+            return;
+        }
+
+        EnemyHealth enemyHealth = currentTarget.GetComponent<EnemyHealth>();
+        if (enemyHealth == null || enemyHealth.isDead)
         {
             FindNewTarget();
             return;
@@ -44,10 +55,12 @@ public class PetAI : MonoBehaviour
         if (dist <= attackRange)
         {
             agent.isStopped = true;
+            RotateTowards(currentTarget.position);
 
-            if (Time.time - lastAttackTime > attackCooldown)
+            if (!isAttacking && Time.time - lastAttackTime >= attackCooldown)
             {
                 animator.SetTrigger("Attack");
+                isAttacking = true;
                 lastAttackTime = Time.time;
             }
         }
@@ -55,6 +68,8 @@ public class PetAI : MonoBehaviour
         {
             agent.isStopped = false;
             agent.SetDestination(currentTarget.position);
+            RotateTowards(agent.steeringTarget);
+            isAttacking = false;
         }
 
         UpdateAnimation();
@@ -67,14 +82,31 @@ public class PetAI : MonoBehaviour
         previousPosition = transform.position;
     }
 
+    void RotateTowards(Vector3 targetPosition)
+    {
+        Vector3 direction = targetPosition - transform.position;
+        direction.y = 0f;
+
+        if (direction.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, Time.deltaTime * 10f);
+        }
+    }
+
     void FindNewTarget()
     {
         GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
         float closestDist = Mathf.Infinity;
         Transform closest = null;
 
-        foreach (var enemy in enemies)
+        foreach (GameObject enemy in enemies)
         {
+            if (enemy == null) continue;
+
+            EnemyHealth health = enemy.GetComponent<EnemyHealth>();
+            if (health == null || health.isDead) continue;
+
             float dist = Vector3.Distance(transform.position, enemy.transform.position);
             if (dist < closestDist)
             {
@@ -84,5 +116,22 @@ public class PetAI : MonoBehaviour
         }
 
         currentTarget = closest;
+    }
+
+    // Gọi từ Animation Event
+    public void DealDamage()
+    {
+        if (currentTarget == null) return;
+
+        EnemyHealth enemy = currentTarget.GetComponent<EnemyHealth>();
+        if (enemy == null || enemy.isDead) return;
+
+        enemy.TakeDamage(damage);
+    }
+
+    // Gọi từ cuối animation Attack (animation event)
+    public void OnAttackEnd()
+    {
+        isAttacking = false;
     }
 }

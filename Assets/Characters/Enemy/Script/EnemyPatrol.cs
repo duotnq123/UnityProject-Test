@@ -17,20 +17,20 @@ public class EnemyPatrol : MonoBehaviour
     public float lostPlayerDistance = 12f;
     public LayerMask playerLayer;
 
-    private int currentPointIndex = 0;
-    private float waitTimer = 0f;
     private NavMeshAgent agent;
     private Animator animator;
     private EnemyAttack enemyAttack;
     private Transform player;
 
-    public bool isInAlarmState = false;
-    private bool alarmTriggered = false;
+    private int currentPointIndex = 0;
+    private float waitTimer = 0f;
 
     private bool isChasing = false;
-    [HideInInspector] public bool isDead = false;
-
+    private bool alarmTriggered = false;
     private bool isTemporarilyDisabled = false;
+
+    [HideInInspector] public bool isInAlarmState = false;
+    [HideInInspector] public bool isDead = false;
 
     void Start()
     {
@@ -46,7 +46,8 @@ public class EnemyPatrol : MonoBehaviour
 
     void Update()
     {
-        if (isDead || !agent.isOnNavMesh || isTemporarilyDisabled) return;
+        if (isDead || !agent.isOnNavMesh || isTemporarilyDisabled)
+            return;
 
         animator.SetFloat("Speed", agent.velocity.magnitude);
 
@@ -99,6 +100,7 @@ public class EnemyPatrol : MonoBehaviour
             alarmTriggered = true;
 
             agent.speed = chaseSpeed;
+            agent.isStopped = true;
             animator.SetTrigger("Alarm");
             animator.SetBool("IsCombo", false);
         }
@@ -134,10 +136,14 @@ public class EnemyPatrol : MonoBehaviour
         player = null;
 
         agent.speed = patrolSpeed;
+        agent.isStopped = false;
         enemyAttack.SetTarget(null);
         GoToNextPatrolPoint();
     }
 
+    /// <summary>
+    /// GỌI TỪ ANIMATION EVENT khi Alarm animation kết thúc
+    /// </summary>
     public void OnAlarmFinished()
     {
         isInAlarmState = false;
