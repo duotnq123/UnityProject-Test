@@ -11,6 +11,9 @@ public class EnemyAttack : MonoBehaviour
     public LayerMask playerLayer;
     public int damage = 10;
 
+    [Header("Attack Point")]
+    public Transform attackPoint;  // Gắn vào tay hoặc vũ khí
+
     private Animator animator;
     private NavMeshAgent agent;
     private Transform target;
@@ -39,7 +42,6 @@ public class EnemyAttack : MonoBehaviour
 
         if (isAttacking)
         {
-            // Ngăn mọi di chuyển trong lúc attack
             agent.isStopped = true;
             agent.velocity = Vector3.zero;
             return;
@@ -54,9 +56,7 @@ public class EnemyAttack : MonoBehaviour
             FaceTarget();
 
             if (attackCoroutine == null)
-            {
                 attackCoroutine = StartCoroutine(AttackRoutine());
-            }
         }
         else
         {
@@ -65,7 +65,6 @@ public class EnemyAttack : MonoBehaviour
         }
     }
 
-
     IEnumerator AttackRoutine()
     {
         isAttacking = true;
@@ -73,47 +72,43 @@ public class EnemyAttack : MonoBehaviour
         animator.SetTrigger("Attack");
         FaceTarget();
 
-        // Chờ animation tấn công hoàn tất thông qua Animation Event OnAttackEnd
         yield return new WaitForSeconds(attackCooldown);
 
-        // Nếu Animation Event không gọi kịp thì fallback tại đây
-        EndAttackSafely();
+        EndAttackSafely(); // Fallback nếu animation không gọi OnAttackEnd
     }
 
     void FaceTarget()
     {
         if (target == null) return;
 
-        Vector3 direction = target.position - transform.position;
-        direction.y = 0f;
+        Vector3 dir = target.position - transform.position;
+        dir.y = 0f;
 
-        if (direction.sqrMagnitude > 0.01f)
+        if (dir.sqrMagnitude > 0.01f)
         {
-            Quaternion lookRotation = Quaternion.LookRotation(direction);
-            transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * 10f);
+            Quaternion lookRot = Quaternion.LookRotation(dir);
+            transform.rotation = Quaternion.Slerp(transform.rotation, lookRot, Time.deltaTime * 10f);
         }
     }
 
-    // Gọi từ Animation Event ở khung giữa
     public void DealDamage()
     {
-        if (isDead || isTemporarilyDisabled || target == null) return;
+        if (isDead || isTemporarilyDisabled || target == null || attackPoint == null) return;
 
-        Vector3 hitCenter = transform.position + transform.forward * (attackRange * 0.5f);
         float radius = attackRange * 0.5f;
+        Collider[] hits = Physics.OverlapSphere(attackPoint.position, radius);
 
-        Collider[] hits = Physics.OverlapSphere(hitCenter, radius, playerLayer);
         foreach (var hit in hits)
         {
-            if (hit.CompareTag("Player"))
+            CharacterController controller = hit.GetComponent<CharacterController>();
+            if (controller != null)
             {
-                Debug.Log("Enemy dealt damage to Player.");
-                // hit.GetComponent<PlayerHealth>()?.TakeDamage(damage);
+                Debug.Log("Enemy dealt damage to Player via CharacterController.");
+                hit.GetComponent<PlayerHealth>()?.TakeDamage(damage);
             }
         }
     }
 
-    // Gọi từ Animation Event ở cuối clip tấn công
     public void OnAttackEnd()
     {
         EndAttackSafely();
@@ -165,4 +160,15 @@ public class EnemyAttack : MonoBehaviour
             agent.isStopped = true;
         }
     }
+
+#if UNITY_EDITOR
+    private void OnDrawGizmosSelected()
+    {
+        if (attackPoint != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(attackPoint.position, 0.8f);
+        }
+    }
+#endif
 }

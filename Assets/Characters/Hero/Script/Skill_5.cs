@@ -8,9 +8,14 @@ public class Skill5 : SkillBase
     public float summonDuration = 10f;
 
     [Header("Object Pool")]
-    public ObjectPool petPool; // Thay vì summonPrefab
+    public ObjectPool petPool; // Dùng object pool thay vì prefab
+    public ObjectPool auraPool;
+
+    [Header("Aura Settings")]
+    public Transform auraSpawnPoint;
 
     private GameObject currentPet;
+    private GameObject activeAura;
 
     protected override void Activate()
     {
@@ -28,7 +33,6 @@ public class Skill5 : SkillBase
 
         currentPet = petPool.GetObject(summonPoint.position, summonPoint.rotation);
 
-        // Nếu bạn có animator, có thể set trigger ở đây
         animator?.SetTrigger("skill5");
 
         StartCoroutine(SummonDurationRoutine());
@@ -44,6 +48,31 @@ public class Skill5 : SkillBase
             currentPet = null;
         }
 
+        if (activeAura != null && auraPool != null)
+        {
+            auraPool.ReturnObject(activeAura);
+            activeAura = null;
+        }
+
         SkillBase.isSkillPlaying = false;
+    }
+
+    // Animation Event
+    public void ShowAura_5()
+    {
+        if (auraPool != null && auraSpawnPoint != null)
+        {
+            activeAura = auraPool.GetObject(auraSpawnPoint.position, auraSpawnPoint.rotation);
+            activeAura.transform.SetParent(transform);
+        }
+    }
+
+    public void OnSkillEnd()
+    {
+        if (activeAura != null && auraPool != null)
+        {
+            auraPool.ReturnObject(activeAura);
+            activeAura = null;
+        }
     }
 }

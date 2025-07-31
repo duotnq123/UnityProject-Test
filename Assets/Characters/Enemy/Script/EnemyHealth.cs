@@ -9,6 +9,12 @@ public class EnemyHealth : MonoBehaviour
     public float maxHealth = 100f;
     private float currentHealth;
 
+    [Header("Attack Settings")]
+    public Transform attackPoint; // ← Gắn transform ở tay
+    public float attackRadius = 0.8f;
+    public float attackDamage = 10f;
+    public LayerMask playerLayer;
+
     [Header("State Flags")]
     public bool isDead { get; private set; } = false;
     private bool isTakingDamage = false;
@@ -44,7 +50,6 @@ public class EnemyHealth : MonoBehaviour
         }
         else
         {
-            // Vào trạng thái bị đánh
             isTakingDamage = true;
 
             if (agent != null && agent.isOnNavMesh)
@@ -150,7 +155,6 @@ public class EnemyHealth : MonoBehaviour
     private void Die()
     {
         isDead = true;
-
         animator?.SetTrigger("Die");
 
         if (agent != null && agent.isOnNavMesh)
@@ -194,5 +198,30 @@ public class EnemyHealth : MonoBehaviour
             agent.isStopped = false;
 
         animator?.Rebind();
+    }
+
+    public void DealDamage()
+    {
+        if (isDead || attackPoint == null) return;
+
+        Collider[] hitPlayers = Physics.OverlapSphere(attackPoint.position, attackRadius, playerLayer);
+        foreach (var player in hitPlayers)
+        {
+            PlayerHealth playerHealth = player.GetComponent<PlayerHealth>();
+            if (playerHealth != null)
+            {
+                playerHealth.TakeDamage(attackDamage);
+                Debug.Log($"Enemy hit {player.name} with {attackDamage} damage.");
+            }
+        }
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        if (attackPoint != null)
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
+        }
     }
 }

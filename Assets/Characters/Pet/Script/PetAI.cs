@@ -7,6 +7,8 @@ public class PetAI : MonoBehaviour
     private NavMeshAgent agent;
     private Animator animator;
     private Transform currentTarget;
+    public LayerMask enemyLayer;
+    public float damageRadius = 1f;
 
     [Header("Combat Settings")]
     public float attackRange = 1.5f;
@@ -118,18 +120,21 @@ public class PetAI : MonoBehaviour
         currentTarget = closest;
     }
 
-    // Gọi từ Animation Event
     public void DealDamage()
     {
-        if (currentTarget == null) return;
+        Vector3 attackPoint = transform.position + transform.forward * 1.0f;
+        Collider[] hits = Physics.OverlapSphere(attackPoint, damageRadius, enemyLayer);
 
-        EnemyHealth enemy = currentTarget.GetComponent<EnemyHealth>();
-        if (enemy == null || enemy.isDead) return;
-
-        enemy.TakeDamage(damage);
+        foreach (Collider hit in hits)
+        {
+            EnemyHealth enemy = hit.GetComponent<EnemyHealth>();
+            if (enemy != null && !enemy.isDead)
+            {
+                enemy.TakeDamage(damage);
+            }
+        }
     }
 
-    // Gọi từ cuối animation Attack (animation event)
     public void OnAttackEnd()
     {
         isAttacking = false;

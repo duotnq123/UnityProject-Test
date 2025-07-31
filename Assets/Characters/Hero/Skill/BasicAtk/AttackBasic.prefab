@@ -4995,6 +4995,8 @@ GameObject:
   - component: {fileID: -688049205759944975}
   - component: {fileID: -3048589469474472162}
   - component: {fileID: -4119764265798715822}
+  - component: {fileID: -15075040301708215}
+  - component: {fileID: -326593718017985326}
   m_Layer: 0
   m_Name: AttackBasic
   m_TagString: Untagged
@@ -9882,6 +9884,38 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 10
   maxDistance: 20
+  delayBeforeReturn: 5
+--- !u!114 &-15075040301708215
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7626139322179216226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ede7b50aa1bce14ca41c614d30c8131, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-326593718017985326
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7626139322179216226}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82aeb3c0204e593499172dc3a33f919a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 20
+  enableKnockback: 0
+  knockbackForce: 5
+  knockbackExtraDirection: {x: 0, y: 1, z: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!1 &8847808085714912025
 GameObject:
   m_ObjectHideFlags: 0

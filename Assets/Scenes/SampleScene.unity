@@ -1542,6 +1542,10 @@ PrefabInstance:
       propertyPath: m_Layer
       value: 6
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 1156334875509381579, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
       propertyPath: m_Layer
       value: 6
@@ -1749,6 +1753,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1287933916}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1287933935}
   m_SourcePrefab: {fileID: 100100000, guid: 54285e2782f5ba940b0289b4a9ddb1d6, type: 3}
 --- !u!1001 &818041391
 PrefabInstance:
@@ -2160,7 +2167,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 8447082967072642302, guid: 100de3b50debda44fa1e85c24ac0c667, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1393444526}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 100de3b50debda44fa1e85c24ac0c667, type: 3}
       insertIndex: -1
@@ -2399,6 +2409,11 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &982458918 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8447082967072642302, guid: 100de3b50debda44fa1e85c24ac0c667, type: 3}
+  m_PrefabInstance: {fileID: 818041391}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1027450100
 GameObject:
   m_ObjectHideFlags: 0
@@ -2585,6 +2600,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  attackPoint: {fileID: 0}
+  attackRadius: 0.8
+  attackDamage: 10
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &1189318388
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2603,6 +2624,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   damage: 10
+  attackPoint: {fileID: 0}
   isDead: 0
 --- !u!114 &1189318389
 MonoBehaviour:
@@ -2778,8 +2800,9 @@ MonoBehaviour:
   attackCooldown: 1.2
   playerLayer:
     serializedVersion: 2
-    m_Bits: 64
-  damage: 10
+    m_Bits: 4294967295
+  damage: 50
+  attackPoint: {fileID: 1393444526}
   isDead: 0
 --- !u!114 &1276192309
 MonoBehaviour:
@@ -2794,6 +2817,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  attackPoint: {fileID: 0}
+  attackRadius: 0.8
+  attackDamage: 10
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!54 &1276192312
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -3306,6 +3335,80 @@ MonoBehaviour:
   summonPoint: {fileID: 1550665750}
   summonDuration: 10
   petPool: {fileID: 1763420304}
+  auraPool: {fileID: 1555209185}
+  auraSpawnPoint: {fileID: 1287933920}
+--- !u!114 &1287933935
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1287933912}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0a3114944755b4439b49eeeaf206275, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxHealth: 100
+  onDeath:
+    m_PersistentCalls:
+      m_Calls: []
+  onHealthChanged:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!1 &1393444525
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1393444526}
+  - component: {fileID: 1393444527}
+  m_Layer: 7
+  m_Name: PointDame
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1393444526
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1393444525}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.307, y: 0.039, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 982458918}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &1393444527
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1393444525}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.50094724, y: 0.71262187, z: 0.30942664}
+  m_Center: {x: -0.27519807, y: -0.13281739, z: -0.108000815}
 --- !u!1 &1451362219
 GameObject:
   m_ObjectHideFlags: 0
@@ -3472,7 +3575,7 @@ Transform:
   m_GameObject: {fileID: 1550665749}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.2, y: 1.263, z: -1.5}
+  m_LocalPosition: {x: 1.61, y: 1.263, z: 2.9}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3569,7 +3672,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2dc28d4d62df3a8409138c148e1eb23b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefab: {fileID: 0}
+  prefab: {fileID: 3377181292992421420, guid: 48c5715f9603c3842a353516a8baefbb, type: 3}
   initialSize: 10
   autoExpand: 1
 --- !u!1 &1592048962
@@ -3742,6 +3845,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  attackPoint: {fileID: 0}
+  attackRadius: 0.8
+  attackDamage: 10
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &1637023728
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3760,6 +3869,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   damage: 10
+  attackPoint: {fileID: 0}
   isDead: 0
 --- !u!114 &1637023729
 MonoBehaviour:
@@ -4337,6 +4447,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  attackPoint: {fileID: 0}
+  attackRadius: 0.8
+  attackDamage: 10
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &1657203449
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4355,6 +4471,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   damage: 10
+  attackPoint: {fileID: 0}
   isDead: 0
 --- !u!114 &1657203450
 MonoBehaviour:
@@ -6066,6 +6183,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxHealth: 100
+  attackPoint: {fileID: 0}
+  attackRadius: 0.8
+  attackDamage: 10
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!114 &2047258836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6084,6 +6207,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   damage: 10
+  attackPoint: {fileID: 0}
   isDead: 0
 --- !u!114 &2047258837
 MonoBehaviour:
