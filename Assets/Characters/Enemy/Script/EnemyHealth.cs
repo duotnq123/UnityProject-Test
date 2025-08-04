@@ -27,6 +27,10 @@ public class EnemyHealth : MonoBehaviour
     private EnemyPatrol patrol;
     private EnemyAttack attack;
 
+    [Header("UI")]
+    [SerializeField] private GameObject healthBarPrefab;
+    private EnemyHealthBar healthBar;
+
     void Awake()
     {
         currentHealth = maxHealth;
@@ -35,6 +39,18 @@ public class EnemyHealth : MonoBehaviour
         agent = GetComponent<NavMeshAgent>();
         patrol = GetComponent<EnemyPatrol>();
         attack = GetComponent<EnemyAttack>();
+
+        if (healthBarPrefab != null)
+        {
+            GameObject canvas = GameObject.Find("CanvasEnemy");
+            if (canvas != null)
+            {
+                GameObject barGO = Instantiate(healthBarPrefab, canvas.transform);
+                healthBar = barGO.GetComponent<EnemyHealthBar>();
+                healthBar.Initialize(transform);
+                healthBar.UpdateHealth(currentHealth, maxHealth);
+            }
+        }
     }
 
     public void TakeDamage(float amount)
@@ -72,6 +88,8 @@ public class EnemyHealth : MonoBehaviour
                 patrol.enabled = false;
             }
         }
+
+        healthBar?.UpdateHealth(currentHealth, maxHealth);
     }
 
     public void OnTakeDamageEnd()
@@ -174,6 +192,9 @@ public class EnemyHealth : MonoBehaviour
 
         var aim = FindAnyObjectByType<PlayerAutoAim>();
         aim?.OnEnemyDied(transform);
+
+        if (healthBar != null)
+            Destroy(healthBar.gameObject);
     }
 
     public void OnDeathAnimationEnd()
@@ -198,6 +219,8 @@ public class EnemyHealth : MonoBehaviour
             agent.isStopped = false;
 
         animator?.Rebind();
+
+        healthBar?.UpdateHealth(currentHealth, maxHealth);
     }
 
     public void DealDamage()

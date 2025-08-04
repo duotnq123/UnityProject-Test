@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.Events;
+using System.Collections;
 
 [RequireComponent(typeof(Animator))]
 public class PlayerHealth : MonoBehaviour
@@ -16,10 +17,18 @@ public class PlayerHealth : MonoBehaviour
     public UnityEvent onDeath;
     public UnityEvent<float> onHealthChanged;
 
+    [SerializeField] private HealthBarUI healthBarUI;
+
+    private Coroutine stunCoroutine;
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
         currentHealth = maxHealth;
+
+        // Cập nhật UI lần đầu
+        if (healthBarUI != null)
+            healthBarUI.SetHealth(currentHealth / maxHealth);
     }
 
     public void TakeDamage(float damage)
@@ -29,16 +38,29 @@ public class PlayerHealth : MonoBehaviour
         currentHealth -= damage;
         currentHealth = Mathf.Clamp(currentHealth, 0f, maxHealth);
 
+        // Update UI
+        if (healthBarUI != null)
+            healthBarUI.SetHealth(currentHealth / maxHealth);
+
         onHealthChanged?.Invoke(currentHealth / maxHealth);
 
         if (currentHealth > 0f)
         {
+            InterruptCurrentSkill();
             animator.SetTrigger("HitReact");
+            StunPlayer(0.4f); // Choáng nhẹ 0.4 giây
         }
         else
         {
             Die();
         }
+        if (currentHealth > 0f)
+        {
+            InterruptCurrentSkill();  // skill nào cho phép mới bị ngắt
+            animator.SetTrigger("HitReact");
+            StunPlayer(0.4f);         // stun nếu skill cho phép
+        }
+
     }
 
     public void Heal(float amount)
@@ -47,6 +69,9 @@ public class PlayerHealth : MonoBehaviour
 
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
         onHealthChanged?.Invoke(currentHealth / maxHealth);
+
+        if (healthBarUI != null)
+            healthBarUI.SetHealth(currentHealth / maxHealth);
     }
 
     private void Die()
@@ -73,9 +98,51 @@ public class PlayerHealth : MonoBehaviour
         }
 
         CharacterController cc = GetComponent<CharacterController>();
-        if (cc != null)
+        if (cc != null) cc.enabled = false;
+    }
+
+    private void StunPlayer(float duration)
+    {
+        SkillBase[] skills = GetComponents<SkillBase>();
+
+        // Nếu có skill đang dùng và KHÔNG bị ngắt → không stun
+        foreach (var skill in skills)
         {
-            cc.enabled = false;
+            if (SkillBase.isSkillPlaying && !skill.isInterruptible)
+                return;
+        }
+
+        if (stunCoroutine != null)
+            StopCoroutine(stunCoroutine);
+
+        stunCoroutine = StartCoroutine(StunRoutine(duration));
+    }
+
+
+    private IEnumerator StunRoutine(float duration)
+    {
+        PlayerMovement movement = GetComponent<PlayerMovement>();
+        PlayerSkillManager skillManager = GetComponent<PlayerSkillManager>();
+
+        if (movement != null) movement.enabled = false;
+        if (skillManager != null) skillManager.enabled = false;
+
+        yield return new WaitForSeconds(duration);
+
+        if (!isDead)
+        {
+            if (movement != null) movement.enabled = true;
+            if (skillManager != null) skillManager.enabled = true;
+        }
+
+        stunCoroutine = null;
+    }
+    private void InterruptCurrentSkill()
+    {
+        SkillBase[] skills = GetComponents<SkillBase>();
+        foreach (var skill in skills)
+        {
+            skill.InterruptSkill();
         }
     }
 }

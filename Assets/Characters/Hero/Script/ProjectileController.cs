@@ -9,17 +9,11 @@ public class ProjectileController : MonoBehaviour
     public float delayBeforeReturn = 5f;
 
     private Vector3 startPos;
-    private ObjectPool projectilePool;
     private Vector3 direction = Vector3.forward;
     private bool isReturning = false;
 
-    void Awake()
-    {
-        if (projectilePool == null)
-        {
-            Debug.LogWarning($"ProjectilePool not assigned for {gameObject.name}!");
-        }
-    }
+    private ObjectPool projectilePool;
+    private ObjectPool explosionPool; // <-- được gán từ Skill
 
     void OnEnable()
     {
@@ -50,11 +44,21 @@ public class ProjectileController : MonoBehaviour
         projectilePool = pool;
     }
 
+    public void SetExplosionPool(ObjectPool pool)
+    {
+        explosionPool = pool;
+
+        // Gán pool này vào ProjectileDamage
+        var damageComp = GetComponent<ProjectileDamage>();
+        if (damageComp != null)
+        {
+            damageComp.SetExplosionPool(pool);
+        }
+    }
+
     void OnTriggerEnter(Collider other)
     {
         if (isReturning) return;
-
-        Debug.Log("Projectile hit: " + other.name);
 
         var breakable = other.GetComponent<BreakableObject>();
         if (breakable != null)
@@ -62,21 +66,6 @@ public class ProjectileController : MonoBehaviour
             breakable.Break();
             ReturnToPool();
         }
-    }
-
-    private IEnumerator DelayedReturnToPool(float delay)
-    {
-        yield return new WaitForSeconds(delay);
-        StartCoroutine(ActuallyReturnToPool());
-    }
-
-    private IEnumerator ActuallyReturnToPool()
-    {
-        yield return null; // chờ 1 frame để coroutine không lỗi nếu bị disable
-        if (projectilePool != null)
-            projectilePool.ReturnObject(gameObject);
-        else
-            Destroy(gameObject);
     }
 
     void ReturnToPool()

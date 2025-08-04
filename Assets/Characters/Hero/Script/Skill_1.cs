@@ -2,11 +2,14 @@
 
 public class Skill1 : SkillBase
 {
+    [Header("Spawn Points")]
     public Transform projectileSpawnPoint;
     public Transform auraSpawnPoint;
 
-    public ObjectPool projectilePool; // Kéo vào từ scene
-    public ObjectPool auraPool;       // Kéo vào từ scene
+    [Header("Object Pools")]
+    public ObjectPool projectilePool;
+    public ObjectPool auraPool;
+    public ObjectPool explosionPool; // <-- Pool hiệu ứng nổ
 
     private GameObject activeAura;
 
@@ -16,40 +19,42 @@ public class Skill1 : SkillBase
         movement.isMovementLocked = true;
     }
 
-    // Animation Event
     public void ShowAura()
     {
         if (auraPool != null && auraSpawnPoint != null)
         {
             activeAura = auraPool.GetObject(auraSpawnPoint.position, auraSpawnPoint.rotation);
-            activeAura.transform.SetParent(transform); // Gắn vào player
+            activeAura.transform.SetParent(transform);
         }
     }
 
     public void FireProjectile()
     {
-        if (projectilePool && projectileSpawnPoint)
+        if (projectilePool == null || projectileSpawnPoint == null) return;
+
+        GameObject projectile = projectilePool.GetObject(projectileSpawnPoint.position, Quaternion.identity);
+        if (projectile == null) return;
+
+        // Hướng bắn
+        Vector3 direction = transform.forward;
+        Transform target = autoAim?.GetTarget();
+        if (target != null)
         {
-            GameObject projectile = projectilePool.GetObject(projectileSpawnPoint.position, Quaternion.identity);
+            direction = (target.position - projectileSpawnPoint.position).normalized;
+        }
 
-            Transform target = autoAim?.GetTarget();
+        projectile.transform.rotation = Quaternion.LookRotation(direction);
 
-            Vector3 dir;
-            if (target != null)
-                dir = (target.position - projectileSpawnPoint.position).normalized;
-            else
-                dir = transform.forward;
-
-            projectile.transform.rotation = Quaternion.LookRotation(dir);
-            // Gán hướng di chuyển cho ProjectileController
-            ProjectileController pc = projectile.GetComponent<ProjectileController>();
-            if (pc != null)
-            {
-                pc.SetDirection(dir);
-                pc.SetPool(projectilePool); 
-            }
+        // Gán dữ liệu
+        var pc = projectile.GetComponent<ProjectileController>();
+        if (pc != null)
+        {
+            pc.SetDirection(direction);
+            pc.SetPool(projectilePool);
+            pc.SetExplosionPool(explosionPool); // Gán Pool hiệu ứng nổ tại đây
         }
     }
+
     public void OnSkillEnd()
     {
         if (activeAura != null && auraPool != null)

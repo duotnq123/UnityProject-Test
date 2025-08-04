@@ -20,18 +20,17 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private bool allowMove = true;
     [SerializeField] private bool allowRotation = true;
 
-    // Internal States
     private CharacterController controller;
     private Animator animator;
-    private Vector2 moveInput;
+    private Vector2 moveInput = Vector2.zero;
     private Vector3 velocity;
     private bool isRunning;
     public static bool IsPlayerRunning = false;
     private bool isGrounded;
     private bool previousIsCombat = false;
+
     public PetFollow petFollow;
 
-    // Public properties
     public bool IsMovementLocked
     {
         get => isMovementLocked;
@@ -41,10 +40,12 @@ public class PlayerMovement : MonoBehaviour
             Debug.Log($"IsMovementLocked set to: {value}");
         }
     }
+
     public bool IsGrounded => isGrounded;
     public bool IsRunning => isRunning;
     public bool IsCombat => lockOnTarget != null;
     public Transform LockOnTarget => lockOnTarget;
+
     public bool AllowMove
     {
         get => allowMove;
@@ -52,8 +53,15 @@ public class PlayerMovement : MonoBehaviour
         {
             allowMove = value;
             Debug.Log($"AllowMove set to: {value}");
+            if (!value)
+            {
+                moveInput = Vector2.zero;
+                velocity.x = 0f;
+                velocity.z = 0f;
+            }
         }
     }
+
     public bool AllowRotation
     {
         get => allowRotation;
@@ -68,6 +76,7 @@ public class PlayerMovement : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         animator = GetComponent<Animator>();
+        animator.applyRootMotion = false;
 
         if (controller == null) Debug.LogError("CharacterController is missing!");
         if (animator == null) Debug.LogError("Animator is missing!");
@@ -76,21 +85,15 @@ public class PlayerMovement : MonoBehaviour
         isMovementLocked = false;
         allowMove = true;
         allowRotation = true;
-
-        Debug.Log("Animator IsCombat on Start = " + animator.GetBool("IsCombat"));
         animator.SetBool("IsCombat", false);
-        previousIsCombat = false;    }
+        previousIsCombat = false;
+    }
 
     void Update()
     {
         if (isMovementLocked)
         {
-            velocity = Vector3.zero;
-            controller.Move(Vector3.zero);
-            UpdateAnimator(0f);
-            Debug.Log("Movement locked: stopping all movement");
-
-            Debug.Log("Update IsCombat: " + animator.GetBool("IsCombat"));
+            StopMovement();
             return;
         }
 
@@ -100,6 +103,15 @@ public class PlayerMovement : MonoBehaviour
         UpdateAnimator(moveInput.magnitude);
     }
 
+    void StopMovement()
+    {
+        moveInput = Vector2.zero;
+        velocity = Vector3.zero;
+        controller.Move(Vector3.zero);
+        animator.SetFloat("Speed", 0f);
+        animator.SetBool("IsRunning", false);
+    }
+
     void HandleGroundCheck()
     {
         isGrounded = controller.isGrounded;
@@ -107,30 +119,27 @@ public class PlayerMovement : MonoBehaviour
         {
             velocity.y = -2f;
         }
-        Debug.Log($"IsGrounded: {isGrounded}");
     }
 
     void HandleMovement()
     {
-        if (!allowMove)
-        {
-            Debug.Log("Movement blocked: allowMove is false");
-            return;
-        }
+        if (!allowMove || moveInput == Vector2.zero) return;
 
         Vector3 moveDirection = GetMovementDirection();
-        float inputMagnitude = moveInput.magnitude;
-        float speed = (isRunning && inputMagnitude > 0.1f) ? runSpeed : walkSpeed;
-
+        float speed = (isRunning && moveInput.magnitude > 0.1f) ? runSpeed : walkSpeed;
         Vector3 horizontalMove = moveDirection.normalized * speed;
         controller.Move(horizontalMove * Time.deltaTime);
-
         RotateTowards(moveDirection);
-        Debug.Log($"Moving: direction={moveDirection}, speed={speed}, input={moveInput}");
     }
 
     void ApplyGravity()
     {
+        if (!allowMove)
+        {
+            velocity.x = 0f;
+            velocity.z = 0f;
+        }
+
         velocity.y += gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
     }
@@ -178,7 +187,6 @@ public class PlayerMovement : MonoBehaviour
         animator.SetBool("IsRunning", isRunning && inputMagnitude > 0.1f);
         animator.SetBool("IsGrounded", isGrounded);
 
-        // Update combat state only when changed
         if (IsCombat != previousIsCombat)
         {
             animator.SetBool("IsCombat", IsCombat);
@@ -202,34 +210,29 @@ public class PlayerMovement : MonoBehaviour
     // INPUT SYSTEM
     public void MoveInputHandler(InputAction.CallbackContext context)
     {
-        moveInput = context.ReadValue<Vector2>();
-        Debug.Log($"Move Input: {moveInput}");
-        if (!isMovementLocked)
-        {
-            UpdateAnimator(moveInput.magnitude);
-        }
+        if (isMovementLocked || !allowMove) return;
+
+        moveInput = context.canceled ? Vector2.zero : context.ReadValue<Vector2>();
+        UpdateAnimator(moveInput.magnitude);
     }
 
     public void RunInputHandler(InputAction.CallbackContext context)
     {
+        if (isMovementLocked) return;
+
         isRunning = context.performed;
         IsPlayerRunning = isRunning;
-        Debug.Log($"Run: {isRunning}");
-        if (!isMovementLocked)
-        {
-            UpdateAnimator(moveInput.magnitude);
-        }
+        UpdateAnimator(moveInput.magnitude);
     }
 
     public void JumpInputHandler(InputAction.CallbackContext context)
     {
-        if (isMovementLocked) return;
+        if (isMovementLocked || !allowMove) return;
 
         if (context.performed && isGrounded)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
             animator.SetTrigger("jumpRun");
-            Debug.Log("Jump triggered");
         }
     }
 
@@ -260,10 +263,10 @@ public class PlayerMovement : MonoBehaviour
         return closest;
     }
 
-    // Utility for skill scripts
     public void LockMovement(bool value)
     {
         isMovementLocked = value;
+        if (value) StopMovement();
         Debug.Log($"LockMovement set to: {value}");
     }
 }

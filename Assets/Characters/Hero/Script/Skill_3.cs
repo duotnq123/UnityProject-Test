@@ -2,19 +2,24 @@
 
 public class Skill3 : SkillBase
 {
+    [Header("Spawn Points")]
     public Transform projectileSpawnPoint;
     public Transform auraSpawnPoint;
 
-    public ObjectPool projectilePool; // Kéo vào từ scene
-    public ObjectPool auraPool;       // Kéo vào từ scene
+    [Header("Object Pools")]
+    public ObjectPool projectilePool; // kéo vào scene
+    public ObjectPool auraPool;       // kéo vào scene
+    public ObjectPool explosionPool;  // THÊM DÒNG NÀY
 
     private GameObject activeAura;
 
     protected override void Activate()
     {
+        isInterruptible = false; // <-- KHÔNG cho phép bị ngắt khi dùng skill này
         animator.SetTrigger("skill3");
         movement.isMovementLocked = true;
     }
+
 
     // Animation Event
     public void ShowAura_3()
@@ -26,32 +31,42 @@ public class Skill3 : SkillBase
         }
     }
 
+    // Animation Event
     public void FireProjectile_3()
     {
-        if (projectilePool && projectileSpawnPoint)
+        if (projectilePool == null || projectileSpawnPoint == null)
         {
-            GameObject projectile = projectilePool.GetObject(projectileSpawnPoint.position, Quaternion.identity);
+            Debug.LogWarning("ProjectilePool hoặc SpawnPoint chưa được gán.");
+            return;
+        }
 
-            Transform target = autoAim?.GetTarget();
+        GameObject projectile = projectilePool.GetObject(projectileSpawnPoint.position, Quaternion.identity);
 
-            Vector3 dir;
-            if (target != null)
-                dir = (target.position - projectileSpawnPoint.position).normalized;
-            else
-                dir = transform.forward;
+        // Xác định hướng
+        Vector3 direction;
+        Transform target = autoAim?.GetTarget();
+        if (target != null)
+            direction = (target.position - projectileSpawnPoint.position).normalized;
+        else
+            direction = transform.forward;
 
-            projectile.transform.rotation = Quaternion.LookRotation(dir);
+        projectile.transform.rotation = Quaternion.LookRotation(direction);
 
-            // Gán hướng di chuyển cho ProjectileController
-            ProjectileController pc = projectile.GetComponent<ProjectileController>();
-            if (pc != null)
-            {
-                pc.SetDirection(dir);
-                pc.SetPool(projectilePool); 
-            }
+        // Cấu hình projectile
+        ProjectileController pc = projectile.GetComponent<ProjectileController>();
+        if (pc != null)
+        {
+            pc.SetDirection(direction);
+            pc.SetPool(projectilePool);
+            pc.SetExplosionPool(explosionPool); 
+        }
+        else
+        {
+            Debug.LogError("Projectile không có ProjectileController.");
         }
     }
 
+    // Animation Event
     public void OnSkillEnd_3()
     {
         if (activeAura != null && auraPool != null)
@@ -60,7 +75,6 @@ public class Skill3 : SkillBase
             activeAura = null;
         }
 
-        movement.isMovementLocked = false;
-        SkillBase.isSkillPlaying = false;
+        EndSkill(); // ← Gọi hàm cha để unlock và reset
     }
 }

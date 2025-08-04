@@ -12,7 +12,7 @@ public class EnemyAttack : MonoBehaviour
     public int damage = 10;
 
     [Header("Attack Point")]
-    public Transform attackPoint;  // Gắn vào tay hoặc vũ khí
+    public Transform attackPoint;  
 
     private Animator animator;
     private NavMeshAgent agent;
@@ -74,7 +74,7 @@ public class EnemyAttack : MonoBehaviour
 
         yield return new WaitForSeconds(attackCooldown);
 
-        EndAttackSafely(); // Fallback nếu animation không gọi OnAttackEnd
+        EndAttackSafely(); 
     }
 
     void FaceTarget()
@@ -95,15 +95,14 @@ public class EnemyAttack : MonoBehaviour
     {
         if (isDead || isTemporarilyDisabled || target == null || attackPoint == null) return;
 
-        float radius = attackRange * 0.5f;
-        Collider[] hits = Physics.OverlapSphere(attackPoint.position, radius);
+        float radius = attackRange * 0.8f;
+        Collider[] hits = Physics.OverlapSphere(attackPoint.position, radius, playerLayer);
 
         foreach (var hit in hits)
         {
             CharacterController controller = hit.GetComponent<CharacterController>();
             if (controller != null)
             {
-                Debug.Log("Enemy dealt damage to Player via CharacterController.");
                 hit.GetComponent<PlayerHealth>()?.TakeDamage(damage);
             }
         }
@@ -112,7 +111,7 @@ public class EnemyAttack : MonoBehaviour
     public void OnAttackEnd()
     {
         EndAttackSafely();
-        Debug.Log("Enemy finished attack animation.");
+        agent.isStopped = false;
     }
 
     private void EndAttackSafely()
@@ -124,7 +123,6 @@ public class EnemyAttack : MonoBehaviour
         }
 
         isAttacking = false;
-        agent.isStopped = false;
     }
 
     public void SetTemporarilyDisabled(bool disabled)
