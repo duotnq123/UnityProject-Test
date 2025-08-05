@@ -11,9 +11,6 @@ public class EnemyHealthBar : MonoBehaviour
     public Vector3 offset = new Vector3(0, 2f, 0);
     private Transform target;
 
-    [Header("Visibility Settings")]
-    public float maxVisibleDistance = 10f;
-
     public void Initialize(Transform targetTransform)
     {
         target = targetTransform;
@@ -37,13 +34,5 @@ public class EnemyHealthBar : MonoBehaviour
 
         transform.position = target.position + offset;
         transform.forward = Camera.main.transform.forward;
-
-        float distance = Vector3.Distance(Camera.main.transform.position, target.position);
-        bool shouldBeVisible = distance <= maxVisibleDistance;
-
-        if (canvas != null && canvas.enabled != shouldBeVisible)
-        {
-            canvas.enabled = shouldBeVisible;
-        }
     }
 }

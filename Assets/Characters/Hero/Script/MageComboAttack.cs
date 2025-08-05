@@ -27,10 +27,15 @@ public class MageComboAttack : MonoBehaviour
     [Header("Combo Timing")]
     public float comboResetTime = 2f;
 
+    [Header("Stamina")]
+    public float staminaCostPerAttack = 15f;
+    private PlayerStamina playerStamina;
+
     void Start()
     {
         animator = GetComponent<Animator>();
         movement = GetComponent<PlayerMovement>();
+        playerStamina = GetComponent<PlayerStamina>();
     }
 
     void Update()
@@ -52,7 +57,6 @@ public class MageComboAttack : MonoBehaviour
 
     void HandleAttackInput()
     {
-        // Nếu chưa bật IsCombat → bỏ qua
         if (!isCombat) return;
 
         lastClickTime = Time.time;
@@ -74,6 +78,11 @@ public class MageComboAttack : MonoBehaviour
         if (comboStep == 0 && movement != null && !movement.IsGrounded)
             return;
 
+        if (playerStamina != null && !playerStamina.UseStamina(staminaCostPerAttack))
+        {
+            return;
+        }
+
         comboStep = (comboStep % 3) + 1;
 
         animator.SetInteger("comboStep", comboStep);
@@ -90,6 +99,7 @@ public class MageComboAttack : MonoBehaviour
             movement.AllowRotation = true;
         }
     }
+
 
     public void EnableComboWindow()
     {
@@ -131,7 +141,7 @@ public class MageComboAttack : MonoBehaviour
             if (controller != null)
             {
                 controller.SetDirection(direction);
-                controller.SetPool(selectedPool); // Gắn lại pool cho return
+                controller.SetPool(selectedPool);
             }
         }
     }

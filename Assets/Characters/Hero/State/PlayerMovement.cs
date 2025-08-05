@@ -20,6 +20,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private bool allowMove = true;
     [SerializeField] private bool allowRotation = true;
 
+    [Header("Player Stamina")]
+    public float staminaCostPerSecondRunning = 10f;
+    public float staminaCostJump = 20f;
+    private PlayerStamina playerStamina;
+
     private CharacterController controller;
     private Animator animator;
     private Vector2 moveInput = Vector2.zero;
@@ -28,8 +33,6 @@ public class PlayerMovement : MonoBehaviour
     public static bool IsPlayerRunning = false;
     private bool isGrounded;
     private bool previousIsCombat = false;
-
-    public PetFollow petFollow;
 
     public bool IsMovementLocked
     {
@@ -87,6 +90,7 @@ public class PlayerMovement : MonoBehaviour
         allowRotation = true;
         animator.SetBool("IsCombat", false);
         previousIsCombat = false;
+        playerStamina = GetComponent<PlayerStamina>();
     }
 
     void Update()
@@ -101,6 +105,7 @@ public class PlayerMovement : MonoBehaviour
         HandleMovement();
         ApplyGravity();
         UpdateAnimator(moveInput.magnitude);
+        HandleRunningStaminaDrain();
     }
 
     void StopMovement()
@@ -178,6 +183,20 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void HandleRunningStaminaDrain()
+    {
+        if (isRunning && moveInput.magnitude > 0.1f && isGrounded && playerStamina != null)
+        {
+            bool hasStamina = playerStamina.UseStamina(staminaCostPerSecondRunning * Time.deltaTime);
+            if (!hasStamina)
+            {
+                isRunning = false;
+                IsPlayerRunning = false;
+                animator.SetBool("IsRunning", false);
+            }
+        }
+    }
+
     void UpdateAnimator(float inputMagnitude)
     {
         if (animator == null) return;
@@ -207,7 +226,6 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
-    // INPUT SYSTEM
     public void MoveInputHandler(InputAction.CallbackContext context)
     {
         if (isMovementLocked || !allowMove) return;
@@ -229,12 +247,16 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isMovementLocked || !allowMove) return;
 
-        if (context.performed && isGrounded)
+        if (context.performed && isGrounded && playerStamina != null)
         {
-            velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
-            animator.SetTrigger("jumpRun");
+            if (playerStamina.UseStamina(staminaCostJump))
+            {
+                velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+                animator.SetTrigger("jumpRun");
+            }
         }
     }
+
 
     public void LockOnInputHandler(InputAction.CallbackContext context)
     {
