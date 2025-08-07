@@ -21,6 +21,9 @@ public class PlayerHealth : MonoBehaviour
 
     private Coroutine stunCoroutine;
 
+    public float CurrentHealth => currentHealth;
+    public float MaxHealth => maxHealth;
+
     private void Awake()
     {
         animator = GetComponent<Animator>();
@@ -144,5 +147,9 @@ public class PlayerHealth : MonoBehaviour
         {
             skill.InterruptSkill();
         }
+    }
+    public bool IsFullHealth()
+    {
+        return currentHealth >= maxHealth;
     }
 }

@@ -11,6 +11,8 @@ public class PlayerMana : MonoBehaviour
     [Header("Events")]
     public UnityEvent onManaChanged;
 
+    public float CurrentMana => currentMana;
+    public float MaxMana => maxMana;
     void Start()
     {
         currentMana = maxMana;
@@ -42,8 +44,19 @@ public class PlayerMana : MonoBehaviour
         return false;
     }
 
+    public void RestoreMana(float amount)
+    {
+        currentMana += amount;
+        currentMana = Mathf.Min(currentMana, maxMana);
+        onManaChanged?.Invoke();
+    }
+
     public float GetManaPercent()
     {
         return currentMana / maxMana;
+    }
+    public bool IsFullMana()
+    {
+        return currentMana >= maxMana;
     }
 }

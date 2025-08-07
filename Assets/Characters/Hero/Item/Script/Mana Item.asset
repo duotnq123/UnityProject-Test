@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a11f3c536ee4be40b3dab13f7387697, type: 3}
+  m_Name: Mana Item
+  m_EditorClassIdentifier: 
+  itemName: 
+  icon: {fileID: 21300000, guid: 222a8d05679acd543be2b9965222d6a7, type: 3}
+  manaAmount: 100
+  manaVFX: {fileID: 9017484664307500583, guid: 152b7ca6ced24f24da439ee0b63993a0, type: 3}

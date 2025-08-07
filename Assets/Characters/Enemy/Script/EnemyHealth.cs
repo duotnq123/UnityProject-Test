@@ -31,6 +31,16 @@ public class EnemyHealth : MonoBehaviour
     [SerializeField] private GameObject healthBarPrefab;
     private EnemyHealthBar healthBar;
 
+    [Header("Drop Settings")]
+    [Tooltip("Prefab của item sẽ rơi ra")]
+    public GameObject healthPotionPrefab;
+    public GameObject manaPotionPrefab;
+
+    [Range(0f, 1f)] public float healthDropRate = 0f; 
+    [Range(0f, 1f)] public float manaDropRate = 0f;   
+
+
+
     void Awake()
     {
         currentHealth = maxHealth;
@@ -47,12 +57,13 @@ public class EnemyHealth : MonoBehaviour
             {
                 GameObject barGO = Instantiate(healthBarPrefab, canvas.transform);
                 healthBar = barGO.GetComponent<EnemyHealthBar>();
-                healthBar.Initialize(transform);
+                healthBar.Initialize(transform); // ← Gán target chính xác
                 healthBar.UpdateHealth(currentHealth, maxHealth);
+
+                barGO.name = "HealthBar_" + gameObject.name; // Debug dễ
             }
         }
     }
-
     public void TakeDamage(float amount)
     {
         if (isDead || !gameObject.activeInHierarchy) return;
@@ -194,8 +205,10 @@ public class EnemyHealth : MonoBehaviour
         aim?.OnEnemyDied(transform);
 
         if (healthBar != null)
+            TryDropItem();
             Destroy(healthBar.gameObject);
     }
+
 
     public void OnDeathAnimationEnd()
     {
@@ -247,4 +260,19 @@ public class EnemyHealth : MonoBehaviour
             Gizmos.DrawWireSphere(attackPoint.position, attackRadius);
         }
     }
+    private void TryDropItem()
+    {
+        if (healthPotionPrefab != null && Random.value <= healthDropRate)
+        {
+            Instantiate(healthPotionPrefab, transform.position, Quaternion.identity);
+            Debug.Log("Dropped a health potion");
+        }
+
+        if (manaPotionPrefab != null && Random.value <= manaDropRate)
+        {
+            Instantiate(manaPotionPrefab, transform.position, Quaternion.identity);
+            Debug.Log("Dropped a mana potion");
+        }
+    }
+
 }
