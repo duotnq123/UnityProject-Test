@@ -51,18 +51,13 @@ public class PlayerHealth : MonoBehaviour
         {
             InterruptCurrentSkill();
             animator.SetTrigger("HitReact");
-            StunPlayer(0.4f); // Choáng nhẹ 0.4 giây
+            StunPlayer(0.4f); 
         }
         else
         {
             Die();
         }
-        if (currentHealth > 0f)
-        {
-            InterruptCurrentSkill();  // skill nào cho phép mới bị ngắt
-            animator.SetTrigger("HitReact");
-            StunPlayer(0.4f);         // stun nếu skill cho phép
-        }
+
 
     }
 
